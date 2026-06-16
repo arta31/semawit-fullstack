@@ -1,0 +1,21 @@
+// {
+//     "compilerOptions": {
+//         "baseUrl": ".",
+//         "paths": {
+//             "@/*": ["resources/js/*"],
+//             "ziggy-js": ["./vendor/tightenco/ziggy"]
+//         }
+//     },
+//     "exclude": ["node_modules", "public"]
+// }
+
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "ignoreDeprecations": "5.0", // <-- Tambahkan baris ini untuk membungkam peringatan VS Code
+        "paths": {
+            "@/*": ["./resources/js/*"]
+        }
+    },
+    "exclude": ["node_modules", "public"]
+}
