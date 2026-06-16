@@ -23,8 +23,7 @@ class LahanPerawatanController extends Controller
             ->paginate(15);
 
         // Ambil daftar lahan aktif untuk dropdown pilihan di form Admin
-        $lahans = ProfilLahan::with('user')->get();
-
+        $lahans = ProfilLahan::with(['user', 'informasiPerawatan'])->get();
         // Ambil produk referensi untuk kebutuhan kalkulasi harga belanja
         $produks = HargaReferensi::all();
 
