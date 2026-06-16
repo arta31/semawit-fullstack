@@ -10,17 +10,18 @@ class ProfilLahan extends Model
     protected $table = 'profil_lahans';
 
     protected $fillable = [
-        'user_id',
-        'nama_lahan',
-        'luas_lahan_hektar',
-        'jumlah_pohon',
-        'lokasi_koordinat',
-    ];
+    'user_id',
+    'nama_lahan',
+    'luas_lahan_hektar',
+    'jumlah_pohon',
+    'frekuensi_pemupukan_tahunan', // <-- TAMBAHKAN BARIS INI
+    'lokasi_koordinat',
+];
 
     /**
      * Relasi ke model User (Setiap lahan dimiliki oleh satu User/Petani)
      */
-    public function user(): BelongsTo // <-- PASTIKAN METHOD INI ADA DAN TULISANNYA BENAR
+    public function user(): BelongsTo 
     {
         return $this->belongsTo(User::class, 'user_id');
     }
