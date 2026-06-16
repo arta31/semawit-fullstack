@@ -13,7 +13,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Set / Suntik Akun Admin KUD Default ke Database
         User::create([
             'name' => 'Admin KUD Semawit',
             'email' => 'admin@semawit.com',
