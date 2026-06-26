@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
     \App\Models\User::create([
         'name' => 'Admin KUD Semawit',
         'email' => 'admin@semawit.com',
-        'phone_number' => '081234567890',
+        'phone_number' => '085263678310',
         'role' => 'admin_kud',
         'password' => \Illuminate\Support\Facades\Hash::make('password123'),
     ]);

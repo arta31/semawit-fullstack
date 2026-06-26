@@ -3,7 +3,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
+// import AuthLayout from '@/Layouts/AuthLayout'; // Tidak perlu jika sudah diset di app.jsx, tapi biarkan jika ingin manual
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function Login({ status, canResetPassword }) {
@@ -22,7 +22,11 @@ export default function Login({ status, canResetPassword }) {
     };
 
     return (
-        <GuestLayout>
+        /* 
+           PERBAIKAN: Gunakan fragment <> sebagai pengganti <GuestLayout> 
+           karena layout utama sudah diatur di bawah atau di app.jsx
+        */
+        <>
             <Head title="Log in" />
 
             {status && (
@@ -84,7 +88,7 @@ export default function Login({ status, canResetPassword }) {
                     {canResetPassword && (
                         <Link
                             href={route('password.request')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
                         >
                             Forgot your password?
                         </Link>
@@ -95,6 +99,10 @@ export default function Login({ status, canResetPassword }) {
                     </PrimaryButton>
                 </div>
             </form>
-        </GuestLayout>
+        </>
     );
 }
+
+// Ini adalah cara profesional untuk membungkus halaman dengan Layout
+import AuthLayout from '@/Layouts/AuthLayout';
+Login.layout = (page) => <AuthLayout children={page} />;

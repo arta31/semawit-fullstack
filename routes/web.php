@@ -36,10 +36,30 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // Rute Khusus Admin KUD
-    // RUANG LINGKUP: ADMIN KUD (Menggunakan middleware role:admin_kud)
     Route::middleware(['role:admin_kud'])->prefix('admin')->name('admin.')->group(function () {
+        
+        // JALUR YANG DI-UPGRADE (Mengirim metrik agregasi database riil ke React)
         Route::get('/dashboard', function () {
-            return Inertia::render('Admin/Dashboard');
+            $totalPetani = \App\Models\User::where('role', 'petani_lansia')->count();
+            $totalBerat = \App\Models\DataPanen::sum('berat_bersih_kg') ?: 0;
+            $totalPupuk = \App\Models\InformasiPerawatan::sum('saldo_pupuk_saat_ini') ?: 0;
+            $totalRacun = \App\Models\InformasiPerawatan::sum('saldo_racun_saat_ini') ?: 0;
+            $totalPengeluaran = \App\Models\LogPerawatan::sum('jumlah_pengeluaran') ?: 0;
+            
+            $recentPanens = \App\Models\DataPanen::with('profilLahan.user')
+                ->latest()
+                ->take(5)
+                ->get();
+
+            return Inertia::render('Admin/Dashboard', [
+                'metrics' => [
+                    'total_petani' => $totalPetani,
+                    'total_berat_kg' => (float)$totalBerat,
+                    'total_tabungan_rp' => (float)($totalPupuk + $totalRacun),
+                    'total_pengeluaran_rp' => (float)$totalPengeluaran,
+                ],
+                'recentPanens' => $recentPanens
+            ]);
         })->name('dashboard');
 
         // Pengelolaan Panen
@@ -52,6 +72,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/harga-referensi', [HargaReferensiController::class, 'store'])->name('harga-referensi.store');
         Route::post('/harga-referensi/{id}', [HargaReferensiController::class, 'update'])->name('harga-referensi.update'); // Menggunakan POST karena membawa data File Upload di form Inertia
         Route::delete('/harga-referensi/{id}', [HargaReferensiController::class, 'destroy'])->name('harga-referensi.destroy');
+        
         // BARU: Pengelolaan Petani Anggota (Setup Klien & Wizard)
         Route::get('/petani', [AdminPetaniController::class, 'index'])->name('petani.index');
         Route::post('/petani', [AdminPetaniController::class, 'store'])->name('petani.store');
@@ -85,4 +106,5 @@ Route::get('/logout-darurat', function () {
     request()->session()->regenerateToken();
     return redirect('/');
 });
+
 require __DIR__ . '/auth.php';
