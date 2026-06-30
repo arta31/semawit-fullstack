@@ -17,9 +17,9 @@ createInertiaApp({
             if (name.startsWith('Admin/') || name.startsWith('Petani/')) {
                 module.default.layout = module.default.layout || ((page) => <MainLayout children={page} />);
             } 
-            // Jika halaman ada di folder Auth, pakai AuthLayout
+            // Jika halaman ada di folder Auth, pakai AuthLayout (kecuali halaman sudah set layout sendiri)
             else if (name.startsWith('Auth/')) {
-                module.default.layout = (page) => <AuthLayout children={page} />;
+                module.default.layout = module.default.layout || ((page) => <AuthLayout children={page} />);
             }
         });
 

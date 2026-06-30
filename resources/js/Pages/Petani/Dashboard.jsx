@@ -113,6 +113,10 @@ export default function Dashboard({ auth, profilLahans }) {
     );
 }
 
+// Halaman ini sudah punya header sendiri yang dirancang untuk petani lansia,
+// jadi tidak perlu dibungkus MainLayout (Navbar admin) seperti halaman Admin/*.
+Dashboard.layout = (page) => page;
+
 /* ── KOMPONEN REUSABLE: TabunganCard ──────────────────────────── */
 function TabunganCard({
     judul, ikon, warnaBadge, warnaProgress, warnaBgIcon,

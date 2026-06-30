@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 
 export default function Navbar() {
     const { auth, ziggy } = usePage().props;
@@ -38,13 +39,10 @@ export default function Navbar() {
                     {/* Logo */}
                     <div className="flex-shrink-0 flex items-center">
                         <Link href="/admin/dashboard" className="flex items-center gap-3">
-                            <div className="bg-white p-2 rounded-xl shadow-lg transform rotate-3">
-                                <span className="text-2xl">🌴</span>
+                            <div className="bg-white p-1.5 rounded-xl shadow-lg transform rotate-3">
+                                <ApplicationLogo className="h-11 w-11 object-contain" />
                             </div>
-                            <div className="leading-none">
-                                <h1 className="text-xl font-black tracking-tighter">SEMAWIT</h1>
-                                <p className="text-[10px] text-emerald-300 font-bold uppercase tracking-[0.2em]">Panel KUD</p>
-                            </div>
+                            <p className="text-[10px] text-emerald-300 font-bold uppercase tracking-[0.2em]">Panel KUD</p>
                         </Link>
                     </div>
 
