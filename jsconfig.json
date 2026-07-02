@@ -12,7 +12,7 @@
 {
     "compilerOptions": {
         "baseUrl": ".",
-        "ignoreDeprecations": "5.0", // <-- Tambahkan baris ini untuk membungkam peringatan VS Code
+        "ignoreDeprecations": "6.0", // <-- Tambahkan baris ini untuk membungkam peringatan VS Code
         "paths": {
             "@/*": ["./resources/js/*"]
         }
