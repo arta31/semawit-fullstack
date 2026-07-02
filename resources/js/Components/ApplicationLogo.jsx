@@ -1,7 +1,7 @@
 export default function ApplicationLogo({ className, ...props }) {
     return (
         <img
-            src="/images/logo.jpeg"
+            src="/images/image.png"
             alt="SEMAWIT"
             className={className}
             {...props}

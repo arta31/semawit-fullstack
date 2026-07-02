@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Head, useForm, Link, router } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
+import { CheckCircle2, ClipboardList, Package, FlaskConical, RefreshCw, Plus } from 'lucide-react';
 
 export default function Index({ hargaReferensis, flash }) {
 
@@ -69,7 +70,7 @@ export default function Index({ hargaReferensis, flash }) {
                 {flash?.success && (
                     <div className="bg-emerald-50 border-l-4 border-emerald-600 p-4 rounded-r-xl text-emerald-900 shadow-sm flex items-start gap-3">
                         <div className="bg-emerald-100 p-1.5 rounded-full mt-0.5">
-                            <span className="text-sm">🎉</span>
+                            <CheckCircle2 size={16} className="text-emerald-600" />
                         </div>
                         <div>
                             <h3 className="text-sm font-bold text-emerald-800">Berhasil!</h3>
@@ -92,10 +93,10 @@ export default function Index({ hargaReferensis, flash }) {
                     {/* Header — konsisten dengan petani, panen, perawatan */}
                     <div className="p-6 border-b border-slate-200/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
                         <div>
-                            <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                                📋 Daftar Acuan Harga KUD
+                            <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
+                                <ClipboardList size={16} className="text-slate-400" /> Daftar Acuan Harga KUD
                             </h2>
-                            <p className="text-xs text-slate-400 mt-0.5">
+                            <p className="text-sm text-slate-500 mt-0.5">
                                 Kelola harga referensi pupuk dan racun untuk perhitungan target sinking fund otomatis.
                             </p>
                         </div>
@@ -114,12 +115,12 @@ export default function Index({ hargaReferensis, flash }) {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50/75 text-slate-400 text-[11px] uppercase tracking-wider border-b border-slate-200/80">
-                                    <th className="py-3 px-6 font-semibold">Foto</th>
-                                    <th className="py-3 px-6 font-semibold">Nama Produk / Jenis</th>
-                                    <th className="py-3 px-6 font-semibold">Harga Satuan</th>
-                                    <th className="py-3 px-6 font-semibold">Deskripsi</th>
-                                    <th className="py-3 px-6 font-semibold text-center">Aksi</th>
+                                <tr className="bg-slate-50 border-b border-slate-200">
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Foto</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nama Produk / Jenis</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Harga Satuan</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Deskripsi</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-sm">
@@ -136,12 +137,12 @@ export default function Index({ hargaReferensis, flash }) {
                                                         className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-sm"
                                                     />
                                                 ) : (
-                                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm border ${
+                                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm border ${
                                                         produk.jenis === 'pupuk'
-                                                            ? 'bg-emerald-50 border-emerald-100'
-                                                            : 'bg-amber-50 border-amber-100'
+                                                            ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
+                                                            : 'bg-amber-50 border-amber-100 text-amber-600'
                                                     }`}>
-                                                        {produk.jenis === 'pupuk' ? '📦' : '🧪'}
+                                                        {produk.jenis === 'pupuk' ? <Package size={20} /> : <FlaskConical size={20} />}
                                                     </div>
                                                 )}
                                             </td>
@@ -220,8 +221,9 @@ export default function Index({ hargaReferensis, flash }) {
                         {/* Modal Header */}
                         <div className="flex justify-between items-center p-5 border-b border-slate-200/80 bg-slate-50 shrink-0">
                             <div>
-                                <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                                    {editMode ? '🔄 Edit Produk Referensi' : '➕ Tambah Produk Referensi'}
+                                <h3 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                                    {editMode ? <RefreshCw size={16} className="text-amber-500" /> : <Plus size={16} className="text-emerald-500" />}
+                                    {editMode ? 'Edit Produk Referensi' : 'Tambah Produk Referensi'}
                                 </h3>
                                 <p className="text-xs text-slate-400 mt-0.5">
                                     {editMode

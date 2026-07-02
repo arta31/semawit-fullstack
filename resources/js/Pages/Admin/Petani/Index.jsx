@@ -1,64 +1,40 @@
 import React, { useState } from 'react';
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
+import { CheckCircle2, Users, FileText, AlertTriangle, Package, FlaskConical } from 'lucide-react';
 
 export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
-    // State untuk mengontrol Modal Onboarding
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Definisikan state form pendaftaran & onboarding menggunakan useForm Inertia
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
         name: '',
         phone_number: '',
         nama_lahan: '',
         luas_lahan_hektar: '',
         jumlah_pohon: '',
-        frekuensi_pemupukan_tahunan: '2', // Default 2x setahun
+        frekuensi_pemupukan_tahunan: '2',
         lokasi_koordinat: '',
         harga_referensi_pupuk_id: '',
         harga_referensi_racun_id: '',
     });
 
-    const formatRupiah = (angka) => {
-        return "Rp " + parseInt(angka || 0).toLocaleString('id-ID');
-    };
+    const formatRupiah = (angka) => 'Rp ' + parseInt(angka || 0).toLocaleString('id-ID');
 
-    // Buka Modal
-    const handleOpenModal = () => {
-        reset();
-        clearErrors();
-        setIsModalOpen(true);
-    };
-
-    // Tutup Modal
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setTimeout(() => {
-            reset();
-            clearErrors();
-        }, 300);
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        post(route('admin.petani.store'), {
-            onSuccess: () => {
-                handleCloseModal();
-            }
-        });
-    };
+    const handleOpenModal = () => { reset(); clearErrors(); setIsModalOpen(true); };
+    const handleCloseModal = () => { setIsModalOpen(false); setTimeout(() => { reset(); clearErrors(); }, 300); };
+    const handleSubmit = (e) => { e.preventDefault(); post(route('admin.petani.store'), { onSuccess: handleCloseModal }); };
 
     return (
         <>
             <Head title="Setup Klien (Onboarding) - SEMAWIT" />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-                
-                {/* ALERT SUKSES DARI BACKEND */}
+
+                {/* FLASH */}
                 {flash.success && (
                     <div className="bg-emerald-50 border-l-4 border-emerald-600 p-4 rounded-r-xl text-emerald-900 shadow-sm flex items-start gap-3">
                         <div className="bg-emerald-100 p-1.5 rounded-full mt-0.5">
-                            <span className="text-sm">🎉</span>
+                            <CheckCircle2 size={16} className="text-emerald-600" />
                         </div>
                         <div>
                             <h3 className="text-sm font-bold text-emerald-800">Onboarding Berhasil!</h3>
@@ -66,7 +42,6 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                         </div>
                     </div>
                 )}
-
                 {flash.error && (
                     <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl text-red-900 shadow-sm flex items-center gap-3">
                         <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -74,35 +49,32 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                     </div>
                 )}
 
-                {/* TABEL DAFTAR ANGGOTA PETANI (Diselaraskan dengan Desain Dashboard) */}
+                {/* TABEL */}
                 <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                    
-                    {/* Header Tabel & Tombol Tambah */}
                     <div className="p-6 border-b border-slate-200/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
                         <div>
-                            <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                                👥 Daftar Anggota Petani Aktif
+                            <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
+                                <Users size={16} className="text-slate-400" /> Daftar Anggota Petani Aktif
                             </h2>
-                            <p className="text-xs text-slate-400 mt-0.5">Kelola data petani, profil lahan, dan pantau saldo Sinking Fund mereka.</p>
+                            <p className="text-sm text-slate-500 mt-0.5">Kelola data petani, profil lahan, dan pantau saldo Sinking Fund mereka.</p>
                         </div>
-                        
-                        <button
-                            onClick={handleOpenModal}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all active:scale-95 shrink-0"
-                        >
+                        <button onClick={handleOpenModal} className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all active:scale-95 shrink-0">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
                             Registrasi Petani Baru
                         </button>
+                        <button onClick={handleOpenModal} className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all active:scale-95 shrink-0">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                            Registrasi 
+                        </button>
                     </div>
 
-                    {/* Isi Tabel */}
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50/75 text-slate-400 text-[11px] uppercase tracking-wider border-b border-slate-200/80">
-                                    <th className="py-3 px-6 font-semibold" width="25%">Nama / Kontak</th>
-                                    <th className="py-3 px-6 font-semibold" width="30%">Informasi Lahan</th>
-                                    <th className="py-3 px-6 font-semibold text-right" width="45%">Status Sinking Fund (Saldo / Target)</th>
+                                <tr className="bg-slate-50 border-b border-slate-200">
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider" width="25%">Nama / Kontak</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider" width="30%">Informasi Lahan</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right" width="45%">Status Sinking Fund (Saldo / Target)</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-sm">
@@ -110,7 +82,6 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                                     petanis.data.map((petani) => {
                                         const lahan = petani.profil_lahans?.[0] || null;
                                         const perawatan = lahan?.informasi_perawatan || null;
-
                                         return (
                                             <tr key={petani.id} className="hover:bg-slate-50/50 transition-colors">
                                                 <td className="py-4 px-6 whitespace-nowrap">
@@ -128,35 +99,33 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                                                                 {lahan.nama_lahan}
                                                             </p>
                                                             <div className="flex gap-2 mt-1">
-                                                                <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[10px] font-bold border border-slate-200/60 uppercase">
-                                                                    {lahan.luas_lahan_hektar} Hektar
-                                                                </span>
-                                                                <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[10px] font-bold border border-slate-200/60 uppercase">
-                                                                    {lahan.jumlah_pohon} Pohon
-                                                                </span>
+                                                                <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[10px] font-bold border border-slate-200/60 uppercase">{lahan.luas_lahan_hektar} Hektar</span>
+                                                                <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[10px] font-bold border border-slate-200/60 uppercase">{lahan.jumlah_pohon} Pohon</span>
                                                             </div>
                                                         </div>
                                                     ) : (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-50 text-red-600 text-[11px] font-bold border border-red-100">
-                                                            ⚠️ Belum ada data lahan
+                                                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-50 text-red-600 text-[11px] font-bold border border-red-100">
+                                                            <AlertTriangle size={12} /> Belum ada data lahan
                                                         </span>
                                                     )}
                                                 </td>
                                                 <td className="py-4 px-6 text-right whitespace-nowrap">
                                                     {perawatan ? (
                                                         <div className="inline-flex flex-col gap-1.5 text-left min-w-[240px]">
-                                                            {/* Baris Pupuk */}
-                                                            <div className="flex items-center justify-between bg-emerald-50/40 px-2.5 py-1 rounded-lg border border-emerald-100/60">
-                                                                <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wide">📦 Pupuk</span>
+                                                            <div className="flex items-center justify-between bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
+                                                                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-800 uppercase tracking-wider">
+                                                                    <Package size={11} /> Pupuk
+                                                                </span>
                                                                 <div className="text-right text-xs">
                                                                     <span className="font-bold text-emerald-600">{formatRupiah(perawatan.saldo_pupuk_saat_ini)}</span>
                                                                     <span className="text-slate-400 mx-1">/</span>
                                                                     <span className="text-slate-400 font-medium">{formatRupiah(perawatan.target_tabungan_pupuk)}</span>
                                                                 </div>
                                                             </div>
-                                                            {/* Baris Racun */}
-                                                            <div className="flex items-center justify-between bg-amber-50/40 px-2.5 py-1 rounded-lg border border-amber-100/60">
-                                                                <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wide">🧪 Racun</span>
+                                                            <div className="flex items-center justify-between bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-100">
+                                                                <span className="flex items-center gap-1 text-xs font-semibold text-amber-800 uppercase tracking-wider">
+                                                                    <FlaskConical size={11} /> Racun
+                                                                </span>
                                                                 <div className="text-right text-xs">
                                                                     <span className="font-bold text-amber-600">{formatRupiah(perawatan.saldo_racun_saat_ini)}</span>
                                                                     <span className="text-slate-400 mx-1">/</span>
@@ -184,17 +153,16 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                 </div>
             </div>
 
-            {/* MODAL WIZARD ONBOARDING */}
+            {/* MODAL */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
                     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={handleCloseModal}></div>
-
                     <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
-                        {/* Modal Header */}
+
                         <div className="flex justify-between items-center p-5 border-b border-slate-200/80 bg-slate-50 shrink-0">
                             <div>
-                                <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                                    📝 Setup Klien & Onboarding Sinking Fund
+                                <h3 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                                    <FileText size={16} className="text-slate-500" /> Setup Klien &amp; Onboarding Sinking Fund
                                 </h3>
                                 <p className="text-xs text-slate-400 mt-0.5">Lengkapi data untuk mendaftarkan petani dan menghitung target tabungan otomatis.</p>
                             </div>
@@ -203,7 +171,6 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                             </button>
                         </div>
 
-                        {/* Modal Body */}
                         <div className="p-6 overflow-y-auto bg-white">
                             <form id="onboardingForm" onSubmit={handleSubmit} className="space-y-6">
                                 {/* SECTION 1 */}
@@ -225,12 +192,11 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                                         </div>
                                     </div>
                                 </div>
-
                                 {/* SECTION 2 */}
                                 <div className="space-y-4">
                                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-1.5">
                                         <span className="bg-emerald-50 text-emerald-600 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">2</span>
-                                        Profil & Spesifikasi Lahan
+                                        Profil &amp; Spesifikasi Lahan
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
@@ -264,7 +230,6 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                                         </div>
                                     </div>
                                 </div>
-
                                 {/* SECTION 3 */}
                                 <div className="space-y-4">
                                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-1.5">
@@ -287,7 +252,6 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                                     </div>
                                     {errors.harga_referensi_pupuk_id && <p className="text-red-500 text-xs mt-1">{errors.harga_referensi_pupuk_id}</p>}
                                 </div>
-
                                 {/* SECTION 4 */}
                                 <div className="space-y-4">
                                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-1.5">
@@ -313,23 +277,16 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                             </form>
                         </div>
 
-                        {/* Modal Footer */}
                         <div className="p-5 border-t border-slate-200/80 bg-slate-50 shrink-0 flex gap-3">
-                            <button type="button" onClick={handleCloseModal} className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs border border-slate-200 transition-colors">
-                                Batal
-                            </button>
-                            <button 
-                                type="submit" form="onboardingForm" disabled={processing} 
-                                className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold 
-                                text-xs rounded-xl shadow-sm transition-all flex justify-center items-center gap-2 disabled:opacity-70">
-                                    {processing && (
-                                        <svg className="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4">   </circle>
-                                            <path className="opacity-75" fill="currentColor" 
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                    )}
-                                    {processing ? 'Menyimpan Data...' : 'Kunci Onboarding & Simpan Petani'}
+                            <button type="button" onClick={handleCloseModal} className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs border border-slate-200 transition-colors">Batal</button>
+                            <button type="submit" form="onboardingForm" disabled={processing} className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex justify-center items-center gap-2 disabled:opacity-70">
+                                {processing && (
+                                    <svg className="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                )}
+                                {processing ? 'Menyimpan Data...' : 'Kunci Onboarding & Simpan Petani'}
                             </button>
                         </div>
                     </div>

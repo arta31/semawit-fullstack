@@ -25,9 +25,10 @@ export default function Register() {
         <>
             <Head title="Daftar Akun" />
 
-            <div className="mb-8 text-center">
+            <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900">Buat Akun Baru</h2>
-                <p className="text-sm text-gray-600 mt-2">Mulai kelola hasil panen dengan lebih mudah</p>
+                <p className="text-sm text-gray-500 mt-1.5">Bergabung dengan SEMAWIT dan mulai kelola hasil panen Anda.</p>
+                <div className="mt-3 h-1 w-10 bg-emerald-500 rounded-full" />
             </div>
 
             <form onSubmit={submit} className="space-y-4">

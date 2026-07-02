@@ -24,9 +24,10 @@ export default function Login({ status, canResetPassword }) {
         <>
             <Head title="Log in" />
 
-            <div className="mb-8 text-center">
+            <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900">Selamat Datang Kembali</h2>
-                <p className="text-sm text-gray-600 mt-2">Silakan masuk ke akun SEMAWIT Anda</p>
+                <p className="text-sm text-gray-500 mt-1.5">Masuk ke akun SEMAWIT Anda untuk melanjutkan.</p>
+                <div className="mt-3 h-1 w-10 bg-emerald-500 rounded-full" />
             </div>
 
             {status && (
@@ -92,10 +93,10 @@ export default function Login({ status, canResetPassword }) {
 
                 <div className="pt-2">
                     <PrimaryButton
-                        className="w-full justify-center py-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 transition-all duration-200 shadow-md"
+                        className="w-full justify-center py-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 transition-all shadow-md shadow-emerald-200 text-sm font-semibold"
                         disabled={processing}
                     >
-                        Masuk Akun
+                        {processing ? 'Memproses...' : 'Masuk Akun'}
                     </PrimaryButton>
                 </div>
 
