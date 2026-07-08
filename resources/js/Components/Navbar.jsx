@@ -21,14 +21,27 @@ export default function Navbar() {
         }
     };
 
-    const navLinks = [
-        { name: 'Dashboard',           href: route('admin.dashboard') },
-        { name: 'Data Petani',         href: route('admin.petani.index') },
-        { name: 'Timbangan Panen',     href: route('admin.panen.index') },
-        { name: 'Pencairan Perawatan', href: route('admin.perawatan.index') },
-        { name: 'Harga Referensi',     href: route('admin.harga-referensi.index') },
-    ];
+  // Cek role user yang sedang login
+    const userRole = auth?.user?.role;
 
+    // Tentukan menu berdasarkan role
+    let navLinks = [];
+
+    if (userRole === 'admin_kud') {
+        navLinks = [
+            { name: 'Dashboard',           href: route('admin.dashboard') },
+            { name: 'Data Petani',         href: route('admin.petani.index') },
+            { name: 'Timbangan Panen',     href: route('admin.panen.index') },
+            { name: 'Pencairan Perawatan', href: route('admin.perawatan.index') },
+            { name: 'Harga Referensi',     href: route('admin.harga-referensi.index') },
+        ];
+    } else if (userRole === 'petani_lansia') {
+        navLinks = [
+            { name: 'Dashboard',       href: route('petani.dashboard') },
+            { name: 'Riwayat Panen',   href: route('petani.riwayat') },
+            { name: 'Tabungan Saya',   href: route('petani.tabungan') },
+        ];
+    }
     const initials = auth.user.name?.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'A';
 
     return (

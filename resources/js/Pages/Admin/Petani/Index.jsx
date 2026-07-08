@@ -1,28 +1,49 @@
 import React, { useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
-import { CheckCircle2, Users, FileText, AlertTriangle, Package, FlaskConical } from 'lucide-react';
+import { CheckCircle2, Users, FileText, AlertTriangle, Package, FlaskConical, KeyRound, Mail } from 'lucide-react';
 
 export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
+    // State untuk Modal Onboarding
     const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    // State untuk Modal Aktifkan Akun
+    const [isAkunModalOpen, setIsAkunModalOpen] = useState(false);
+    const [selectedPetani, setSelectedPetani] = useState(null);
 
+    // Form Onboarding
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
-        name: '',
-        phone_number: '',
-        nama_lahan: '',
-        luas_lahan_hektar: '',
-        jumlah_pohon: '',
-        frekuensi_pemupukan_tahunan: '2',
-        lokasi_koordinat: '',
-        harga_referensi_pupuk_id: '',
-        harga_referensi_racun_id: '',
+        name: '', phone_number: '', nama_lahan: '', luas_lahan_hektar: '',
+        jumlah_pohon: '', frekuensi_pemupukan_tahunan: '2', lokasi_koordinat: '',
+        harga_referensi_pupuk_id: '', harga_referensi_racun_id: '',
+    });
+
+    // Form Aktifkan Akun
+    const formAkun = useForm({
+        email: '', password: '',
     });
 
     const formatRupiah = (angka) => 'Rp ' + parseInt(angka || 0).toLocaleString('id-ID');
 
+    // Handler Onboarding
     const handleOpenModal = () => { reset(); clearErrors(); setIsModalOpen(true); };
     const handleCloseModal = () => { setIsModalOpen(false); setTimeout(() => { reset(); clearErrors(); }, 300); };
     const handleSubmit = (e) => { e.preventDefault(); post(route('admin.petani.store'), { onSuccess: handleCloseModal }); };
+
+    // Handler Aktifkan Akun
+    const handleOpenAkunModal = (petani) => {
+        setSelectedPetani(petani);
+        formAkun.reset();
+        formAkun.clearErrors();
+        setIsAkunModalOpen(true);
+    };
+    const handleCloseAkunModal = () => { setIsAkunModalOpen(false); setTimeout(() => setSelectedPetani(null), 300); };
+    const handleAkunSubmit = (e) => {
+        e.preventDefault();
+        formAkun.post(route('admin.petani.aktifkan-akun', selectedPetani.id), {
+            onSuccess: handleCloseAkunModal
+        });
+    };
 
     return (
         <>
@@ -30,21 +51,19 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-                {/* FLASH */}
+                {/* FLASH MESSAGES */}
                 {flash.success && (
                     <div className="bg-emerald-50 border-l-4 border-emerald-600 p-4 rounded-r-xl text-emerald-900 shadow-sm flex items-start gap-3">
-                        <div className="bg-emerald-100 p-1.5 rounded-full mt-0.5">
-                            <CheckCircle2 size={16} className="text-emerald-600" />
-                        </div>
+                        <div className="bg-emerald-100 p-1.5 rounded-full mt-0.5"><CheckCircle2 size={16} className="text-emerald-600" /></div>
                         <div>
-                            <h3 className="text-sm font-bold text-emerald-800">Onboarding Berhasil!</h3>
+                            <h3 className="text-sm font-bold text-emerald-800">Berhasil!</h3>
                             <p className="text-xs font-medium mt-0.5 leading-relaxed text-emerald-700">{flash.success}</p>
                         </div>
                     </div>
                 )}
                 {flash.error && (
                     <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl text-red-900 shadow-sm flex items-center gap-3">
-                        <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <AlertTriangle size={20} className="text-red-500 shrink-0" />
                         <p className="text-xs font-bold">{flash.error}</p>
                     </div>
                 )}
@@ -58,13 +77,9 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                             </h2>
                             <p className="text-sm text-slate-500 mt-0.5">Kelola data petani, profil lahan, dan pantau saldo Sinking Fund mereka.</p>
                         </div>
-                        <button onClick={handleOpenModal} className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all active:scale-95 shrink-0">
+                        <button onClick={handleOpenModal} className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all active:scale-95 shrink-0">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
                             Registrasi Petani Baru
-                        </button>
-                        <button onClick={handleOpenModal} className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all active:scale-95 shrink-0">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-                            Registrasi 
                         </button>
                     </div>
 
@@ -85,10 +100,26 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                                         return (
                                             <tr key={petani.id} className="hover:bg-slate-50/50 transition-colors">
                                                 <td className="py-4 px-6 whitespace-nowrap">
-                                                    <p className="font-semibold text-slate-900">{petani.name}</p>
-                                                    <div className="flex items-center gap-1 mt-0.5 text-xs text-slate-400 font-medium">
-                                                        <svg className="w-3 h-3 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                                    <p className="font-bold text-slate-900 text-base">{petani.name}</p>
+                                                    <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-500 font-medium">
+                                                        <svg className="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                                                         {petani.phone_number}
+                                                    </div>
+                                                    
+                                                    {/* LOGIKA AKUN LOGIN */}
+                                                    <div className="mt-2.5">
+                                                        {petani.email ? (
+                                                            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-100">
+                                                                <Mail size={12} /> {petani.email}
+                                                            </span>
+                                                        ) : (
+                                                            <button 
+                                                                onClick={() => handleOpenAkunModal(petani)}
+                                                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 text-[10px] font-bold border border-slate-200 hover:border-emerald-200 transition-colors"
+                                                            >
+                                                                <KeyRound size={12} /> Buat Akun Login
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 <td className="py-4 px-6 whitespace-nowrap">
@@ -98,7 +129,7 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                                                                 <svg className="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                                 {lahan.nama_lahan}
                                                             </p>
-                                                            <div className="flex gap-2 mt-1">
+                                                            <div className="flex gap-2 mt-1.5">
                                                                 <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[10px] font-bold border border-slate-200/60 uppercase">{lahan.luas_lahan_hektar} Hektar</span>
                                                                 <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[10px] font-bold border border-slate-200/60 uppercase">{lahan.jumlah_pohon} Pohon</span>
                                                             </div>
@@ -112,24 +143,24 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                                                 <td className="py-4 px-6 text-right whitespace-nowrap">
                                                     {perawatan ? (
                                                         <div className="inline-flex flex-col gap-1.5 text-left min-w-[240px]">
-                                                            <div className="flex items-center justify-between bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
-                                                                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-800 uppercase tracking-wider">
-                                                                    <Package size={11} /> Pupuk
+                                                            <div className="flex items-center justify-between bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-100">
+                                                                <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                                                                    <Package size={12} /> Pupuk
                                                                 </span>
                                                                 <div className="text-right text-xs">
-                                                                    <span className="font-bold text-emerald-600">{formatRupiah(perawatan.saldo_pupuk_saat_ini)}</span>
+                                                                    <span className="font-black text-emerald-700">{formatRupiah(perawatan.saldo_pupuk_saat_ini)}</span>
                                                                     <span className="text-slate-400 mx-1">/</span>
-                                                                    <span className="text-slate-400 font-medium">{formatRupiah(perawatan.target_tabungan_pupuk)}</span>
+                                                                    <span className="text-slate-500 font-medium">{formatRupiah(perawatan.target_tabungan_pupuk)}</span>
                                                                 </div>
                                                             </div>
-                                                            <div className="flex items-center justify-between bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-100">
-                                                                <span className="flex items-center gap-1 text-xs font-semibold text-amber-800 uppercase tracking-wider">
-                                                                    <FlaskConical size={11} /> Racun
+                                                            <div className="flex items-center justify-between bg-amber-50 px-2.5 py-1.5 rounded-lg border border-amber-100">
+                                                                <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800 uppercase tracking-wider">
+                                                                    <FlaskConical size={12} /> Racun
                                                                 </span>
                                                                 <div className="text-right text-xs">
-                                                                    <span className="font-bold text-amber-600">{formatRupiah(perawatan.saldo_racun_saat_ini)}</span>
+                                                                    <span className="font-black text-amber-700">{formatRupiah(perawatan.saldo_racun_saat_ini)}</span>
                                                                     <span className="text-slate-400 mx-1">/</span>
-                                                                    <span className="text-slate-400 font-medium">{formatRupiah(perawatan.target_tabungan_racun)}</span>
+                                                                    <span className="text-slate-500 font-medium">{formatRupiah(perawatan.target_tabungan_racun)}</span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -153,7 +184,43 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                 </div>
             </div>
 
-            {/* MODAL */}
+            {/* MODAL AKTIFKAN AKUN LOGIN */}
+            {isAkunModalOpen && selectedPetani && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-0">
+                    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={handleCloseAkunModal}></div>
+                    <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
+                        <div className="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                                <KeyRound size={18} className="text-emerald-600" /> Aktifkan Akun Login
+                            </h3>
+                            <button onClick={handleCloseAkunModal} className="text-slate-400 hover:text-red-500"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                        </div>
+                        <div className="p-6">
+                            <p className="text-sm text-slate-600 mb-4">Buatkan email dan password untuk <strong>{selectedPetani.name}</strong> agar bisa login ke aplikasi.</p>
+                            <form id="akunForm" onSubmit={handleAkunSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Alamat Email</label>
+                                    <input type="email" value={formAkun.data.email} onChange={e => formAkun.setData('email', e.target.value)} className="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm" required placeholder="contoh: petani@semawit.com" />
+                                    {formAkun.errors.email && <p className="text-red-500 text-xs mt-1">{formAkun.errors.email}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Password Baru</label>
+                                    <input type="text" value={formAkun.data.password} onChange={e => formAkun.setData('password', e.target.value)} className="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm" required placeholder="Minimal 6 karakter" minLength="6" />
+                                    {formAkun.errors.password && <p className="text-red-500 text-xs mt-1">{formAkun.errors.password}</p>}
+                                </div>
+                            </form>
+                        </div>
+                        <div className="p-4 border-t border-slate-100 bg-slate-50 flex gap-3">
+                            <button type="button" onClick={handleCloseAkunModal} className="px-4 py-2 bg-white text-slate-700 font-bold rounded-xl text-sm border border-slate-200">Batal</button>
+                            <button type="submit" form="akunForm" disabled={formAkun.processing} className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-sm">
+                                {formAkun.processing ? 'Menyimpan...' : 'Aktifkan Akun'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL ONBOARDING WIZARD (KODE LAMA TETAP ADA DI BAWAH SINI) */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
                     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={handleCloseModal}></div>
@@ -171,7 +238,7 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                             </button>
                         </div>
 
-                        <div className="p-6 overflow-y-auto bg-white">
+                        <div className="p-6 overflow-y-auto bg-white custom-scrollbar">
                             <form id="onboardingForm" onSubmit={handleSubmit} className="space-y-6">
                                 {/* SECTION 1 */}
                                 <div className="space-y-4">
