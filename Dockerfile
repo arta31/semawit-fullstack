@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs
 
-# Aktifkan rewrite (HANYA INI SAJA, TIDAK ADA SETTINGAN MPM)
+# Aktifkan rewrite (HANYA INI, TIDAK ADA SETTINGAN MPM)
 RUN a2enmod rewrite
 
 # Install ekstensi database
