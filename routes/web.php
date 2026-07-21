@@ -32,14 +32,16 @@ Route::get('/dashboard', function () {
 
     abort(403, 'Peran pengguna tidak dikenal atau Anda belum masuk.');
 })->middleware(['auth'])->name('dashboard');
+
 // Grup Rute dengan Autentikasi
 Route::middleware(['auth'])->group(function () {
 
     // Rute Khusus Admin KUD
     Route::middleware(['role:admin_kud'])->prefix('admin')->name('admin.')->group(function () {
 
+        // RUTE Dashboard Admin
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-
+        
         // Pengelolaan Panen
         Route::get('/panen', [PanenController::class, 'index'])->name('panen.index');
         Route::post('/panen', [PanenController::class, 'store'])->name('panen.store');
@@ -58,6 +60,7 @@ Route::middleware(['auth'])->group(function () {
 
         // TAMBAHKAN BARIS INI:
         Route::post('/petani/{id}/aktifkan-akun', [AdminPetaniController::class, 'aktifkanAkun'])->name('petani.aktifkan-akun');
+        
         // BARU: Pengeluaran Belanja Sinking Fund (Cair / Potong Saldo)
         Route::get('/perawatan', [LahanPerawatanController::class, 'index'])->name('perawatan.index');
         Route::post('/perawatan', [LahanPerawatanController::class, 'store'])->name('perawatan.store');
@@ -65,9 +68,6 @@ Route::middleware(['auth'])->group(function () {
 
     // Rute Khusus Petani Lansia
     Route::middleware(['role:petani_lansia'])->prefix('petani')->name('petani.')->group(function () {
-        // Route::get('/dashboard', function () {
-        //     return Inertia::render('Petani/Dashboard');
-        // })->name('dashboard');
 
         Route::get('/dashboard', [PetaniDashboardController::class, 'index'])->name('dashboard');
         Route::post('/panen', [PanenController::class, 'store'])->name('panen.store');
