@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs
 
-# Aktifkan mod_rewrite Apache untuk Laravel
+# Atur modul MPM Apache agar tidak konflik, lalu aktifkan rewrite
+RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
 RUN a2enmod rewrite
 
 # Install ekstensi database (MySQL wajib untuk TiDB)
