@@ -1,7 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, Head } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Scale, Wallet, TrendingUp, ClipboardList, ChevronRight, ChevronDown, Check } from 'lucide-react';
+import { Scale, Wallet, TrendingUp, ClipboardList, ChevronRight, ChevronDown, Check, MessageCircle, Phone, X } from 'lucide-react';
+
+// Kontak resmi KUD untuk pendaftaran anggota baru (UC01: hanya Admin KUD yang boleh buat akun,
+// jadi pendaftaran publik diarahkan untuk menghubungi KUD, bukan formulir mandiri).
+const KONTAK_KUD = {
+    nomorTampil: '0823-3923-8055',
+    nomorWa: '6282339238055', // format internasional tanpa tanda + untuk wa.me
+    pesanTemplate: 'Halo, saya ingin mendaftar sebagai anggota KUD SEMAWIT.',
+};
+const waLink = `https://wa.me/${KONTAK_KUD.nomorWa}?text=${encodeURIComponent(KONTAK_KUD.pesanTemplate)}`;
 
 const fiturList = [
     {
@@ -38,18 +47,20 @@ const fiturColors = {
 };
 
 const langkahList = [
-    { no: '1', title: 'Daftar Akun',     desc: 'Petani atau Admin KUD mendaftarkan akun untuk mulai menggunakan SEMAWIT.' },
-    { no: '2', title: 'Input Data Lahan', desc: 'Masukkan data lahan, hasil panen, dan perawatan kebun kelapa sawit Anda.' },
-    { no: '3', title: 'Pantau & Laporkan', desc: 'Lihat ringkasan tabungan, panen, dan laporan perawatan lahan secara real-time.' },
+    { no: '1', title: 'Daftar ke KUD',    desc: 'Calon anggota datang langsung ke KUD. Admin KUD mendaftarkan akun dan data lahan ke sistem.' },
+    { no: '2', title: 'Catat Hasil Panen', desc: 'Admin mencatat timbangan panen dan sistem otomatis memotong tabungan pupuk & racun.' },
+    { no: '3', title: 'Pantau & Unduh Laporan', desc: 'Petani memantau saldo tabungan dan riwayat panen. Laporan bisa diunduh kapan saja.' },
 ];
 
 const faqList = [
     { q: 'Apakah aplikasi SEMAWIT berbayar?',          a: 'SEMAWIT disediakan untuk anggota Koperasi Unit Desa (KUD) tanpa biaya tambahan bagi petani.' },
-    { q: 'Bagaimana cara mendaftar sebagai petani?',   a: 'Klik tombol "Daftar Petani" pada halaman ini, lengkapi data diri dan data lahan kebun sawit Anda.' },
+    { q: 'Bagaimana cara mendaftar sebagai petani?',   a: 'Klik tombol "Daftar" pada halaman ini untuk menghubungi kontak resmi KUD via WhatsApp, atau datang langsung ke kantor KUD. Admin KUD yang akan membuatkan akun dan mendata lahan Anda.' },
     { q: 'Apakah data tabungan saya aman?',            a: 'Seluruh data tersimpan terpusat dan hanya dapat diakses oleh Anda dan Admin KUD yang berwenang.' },
 ];
 
-export default function Welcome({ auth, canLogin, canRegister }) {
+export default function Welcome({ auth, canLogin }) {
+    const [isDaftarModalOpen, setIsDaftarModalOpen] = useState(false);
+
     return (
         <div className="min-h-screen bg-white text-gray-900 selection:bg-emerald-500 selection:text-white">
             <Head title="Selamat Datang" />
@@ -57,7 +68,10 @@ export default function Welcome({ auth, canLogin, canRegister }) {
             {/* ── NAVBAR ── */}
             <nav className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
                 <div className="max-w-7xl mx-auto flex items-center justify-between px-6 lg:px-12 h-16">
-                    <ApplicationLogo className="h-11 w-auto object-contain" />
+                    <div className="flex items-center gap-2.5">
+                        <ApplicationLogo className="h-11 w-auto object-contain" />
+                        <span className="text-lg font-black text-emerald-800 tracking-tight">SEMAWIT</span>
+                    </div>
 
                     <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-500">
                         <a href="#tentang" className="hover:text-emerald-600 transition-colors">Tentang</a>
@@ -72,14 +86,15 @@ export default function Welcome({ auth, canLogin, canRegister }) {
                             </Link>
                         ) : (
                             <>
+                                <button
+                                    onClick={() => setIsDaftarModalOpen(true)}
+                                    className="px-5 py-2 border border-emerald-200 text-emerald-700 hover:bg-emerald-50 text-sm font-semibold rounded-full transition-colors"
+                                >
+                                    Daftar
+                                </button>
                                 {canLogin && (
-                                    <Link href={route('login')} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-emerald-700 transition-colors rounded-full">
+                                    <Link href={route('login')} className="flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full shadow-sm transition-colors">
                                         Masuk
-                                    </Link>
-                                )}
-                                {canRegister && (
-                                    <Link href={route('register')} className="flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full shadow-sm transition-colors">
-                                        Daftar Sekarang
                                     </Link>
                                 )}
                             </>
@@ -114,11 +129,9 @@ export default function Welcome({ auth, canLogin, canRegister }) {
                             Koperasi Unit Desa dalam satu sistem yang mudah digunakan.
                         </p>
                         <div className="mt-8 flex flex-wrap gap-3">
-                            {canRegister && (
-                                <Link href={route('register')} className="flex items-center gap-2 px-7 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-emerald-950 text-sm font-bold rounded-full shadow-lg shadow-yellow-400/30 transition-all hover:-translate-y-0.5">
-                                    Daftar Petani <ChevronRight size={16} />
-                                </Link>
-                            )}
+                            <Link href={route('login')} className="flex items-center gap-2 px-7 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-emerald-950 text-sm font-bold rounded-full shadow-lg shadow-yellow-400/30 transition-all hover:-translate-y-0.5">
+                                Masuk ke SEMAWIT <ChevronRight size={16} />
+                            </Link>
                             <a href="#fitur" className="flex items-center gap-2 px-7 py-3.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold rounded-full transition-colors backdrop-blur-sm">
                                 Lihat Fitur
                             </a>
@@ -265,8 +278,8 @@ export default function Welcome({ auth, canLogin, canRegister }) {
                         </div>
 
                         <div className="relative grid sm:grid-cols-3 gap-8">
-                            {/* Connector line */}
-                            <div className="hidden sm:block absolute top-8 left-1/3 right-1/3 h-0.5 bg-gradient-to-r from-yellow-400/40 via-yellow-400/80 to-yellow-400/40" />
+                            {/* Connector line: menyambung dari titik tengah lingkaran langkah 1 ke langkah 3 */}
+                            <div className="hidden sm:block absolute top-8 left-[16.6667%] right-[16.6667%] h-0.5 bg-gradient-to-r from-yellow-400/40 via-yellow-400/80 to-yellow-400/40" />
 
                             {langkahList.map((langkah, idx) => (
                                 <div key={langkah.no} className="flex flex-col items-center text-center relative">
@@ -283,13 +296,11 @@ export default function Welcome({ auth, canLogin, canRegister }) {
                             ))}
                         </div>
 
-                        {canRegister && (
-                            <div className="relative text-center mt-14">
-                                <Link href={route('register')} className="inline-flex items-center gap-2 px-8 py-4 bg-yellow-400 hover:bg-yellow-300 text-emerald-950 text-sm font-bold rounded-full shadow-lg shadow-yellow-400/30 transition-all hover:-translate-y-0.5">
-                                    Mulai Pakai Sekarang <ChevronRight size={16} />
-                                </Link>
-                            </div>
-                        )}
+                        <div className="relative text-center mt-14">
+                            <Link href={route('login')} className="inline-flex items-center gap-2 px-8 py-4 bg-yellow-400 hover:bg-yellow-300 text-emerald-950 text-sm font-bold rounded-full shadow-lg shadow-yellow-400/30 transition-all hover:-translate-y-0.5">
+                                Masuk ke SEMAWIT <ChevronRight size={16} />
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -347,6 +358,11 @@ export default function Welcome({ auth, canLogin, canRegister }) {
                         <h4 className="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Hubungi Kami</h4>
                         <ul className="space-y-2.5 text-sm text-emerald-300/70">
                             <li>semawit@kud.com</li>
+                            <li>
+                                <a href={waLink} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                                    WhatsApp: {KONTAK_KUD.nomorTampil}
+                                </a>
+                            </li>
                             <li>Indonesia</li>
                         </ul>
                     </div>
@@ -355,6 +371,55 @@ export default function Welcome({ auth, canLogin, canRegister }) {
                     &copy; {new Date().getFullYear()} SEMAWIT. All rights reserved.
                 </div>
             </footer>
+
+            {/* ── MODAL DAFTAR ANGGOTA ── */}
+            {isDaftarModalOpen && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    onClick={() => setIsDaftarModalOpen(false)}
+                >
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" />
+                    <div
+                        className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-7 text-center"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            onClick={() => setIsDaftarModalOpen(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 p-1.5 rounded-full transition-colors"
+                        >
+                            <X size={16} />
+                        </button>
+
+                        <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4">
+                            <MessageCircle size={26} />
+                        </div>
+
+                        <h3 className="text-lg font-black text-gray-900">Daftar Jadi Anggota KUD</h3>
+                        <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+                            Pendaftaran anggota SEMAWIT dilakukan oleh Admin KUD, bukan lewat formulir online.
+                            Silakan hubungi kontak resmi berikut atau datang langsung ke kantor KUD.
+                        </p>
+
+                        <a
+                            href={`tel:${KONTAK_KUD.nomorWa}`}
+                            className="flex items-center justify-center gap-2 mt-5 text-base font-bold text-gray-800 bg-gray-50 border border-gray-200 rounded-xl py-3 hover:bg-gray-100 transition-colors"
+                        >
+                            <Phone size={16} className="text-gray-400" />
+                            {KONTAK_KUD.nomorTampil}
+                        </a>
+
+                        <a
+                            href={waLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 mt-3 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl py-3 shadow-sm transition-colors"
+                        >
+                            <MessageCircle size={16} />
+                            Chat via WhatsApp
+                        </a>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

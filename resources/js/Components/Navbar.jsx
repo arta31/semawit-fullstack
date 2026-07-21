@@ -21,14 +21,27 @@ export default function Navbar() {
         }
     };
 
-    const navLinks = [
-        { name: 'Dashboard',           href: route('admin.dashboard') },
-        { name: 'Data Petani',         href: route('admin.petani.index') },
-        { name: 'Timbangan Panen',     href: route('admin.panen.index') },
-        { name: 'Pencairan Perawatan', href: route('admin.perawatan.index') },
-        { name: 'Harga Referensi',     href: route('admin.harga-referensi.index') },
-    ];
+  // Cek role user yang sedang login
+    const userRole = auth?.user?.role;
 
+    // Tentukan menu berdasarkan role
+    let navLinks = [];
+
+    if (userRole === 'admin_kud') {
+        navLinks = [
+            { name: 'Dashboard',           href: route('admin.dashboard') },
+            { name: 'Data Petani',         href: route('admin.petani.index') },
+            { name: 'Data Panen',           href: route('admin.panen.index') },
+            { name: 'Transaksi Produk',      href: route('admin.perawatan.index') },
+            { name: 'Data Produk Perawatan', href: route('admin.harga-referensi.index') },
+        ];
+    } else if (userRole === 'petani_lansia') {
+        navLinks = [
+            { name: 'Dashboard',       href: route('petani.dashboard') },
+            { name: 'Riwayat Panen',   href: route('petani.riwayat') },
+            { name: 'Tabungan Saya',   href: route('petani.tabungan') },
+        ];
+    }
     const initials = auth.user.name?.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'A';
 
     return (
@@ -37,12 +50,12 @@ export default function Navbar() {
                 <div className="flex items-center justify-between h-16">
 
                     {/* Logo */}
-                    <Link href="/admin/dashboard" className="flex items-center gap-2.5 shrink-0">
+                    <Link href={userRole === 'admin_kud' ? route('admin.dashboard') : route('petani.dashboard')} className="flex items-center gap-2.5 shrink-0">
                         <div className="bg-white rounded-lg p-1 shadow-sm">
                             <ApplicationLogo className="h-8 w-8 object-contain" />
                         </div>
                         <span className="text-xs font-semibold text-emerald-300 uppercase tracking-widest hidden sm:block">
-                            Panel KUD
+                            SEMAWIT
                         </span>
                     </Link>
 
@@ -74,7 +87,7 @@ export default function Navbar() {
                             </div>
                             <div className="hidden lg:block text-right leading-tight">
                                 <p className="text-sm font-semibold text-white truncate max-w-[140px]">{auth.user.name}</p>
-                                <p className="text-xs text-emerald-300">Admin KUD</p>
+                                <p className="text-xs text-emerald-300">{userRole === 'admin_kud' ? 'Admin KUD' : 'Petani KUD'}</p>
                             </div>
                         </div>
 

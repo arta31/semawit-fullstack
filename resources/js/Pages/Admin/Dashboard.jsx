@@ -38,7 +38,7 @@ export default function Dashboard({ metrics, recentPanens = [] }) {
             border: 'border-amber-100',
         },
         {
-            label: 'Total Perawatan Cair',
+            label: 'Total Transaksi Produk',
             val: metrics?.total_pengeluaran_rp,
             isRp: true,
             Icon: Wrench,
@@ -51,9 +51,9 @@ export default function Dashboard({ metrics, recentPanens = [] }) {
 
     const quickActions = [
         { href: route('admin.petani.index'),          Icon: FileText,   title: 'Data Petani',      desc: 'Onboarding & setup target tabungan',   color: 'text-blue-600',    hoverBorder: 'hover:border-blue-300' },
-        { href: route('admin.panen.index'),           Icon: Scale,      title: 'Catat Panen',      desc: 'Input timbangan & potong otomatis',    color: 'text-emerald-600', hoverBorder: 'hover:border-emerald-300' },
-        { href: route('admin.perawatan.index'),       Icon: CreditCard, title: 'Cairkan Tabungan', desc: 'Catat pengambilan pupuk/racun',         color: 'text-amber-600',   hoverBorder: 'hover:border-amber-300' },
-        { href: route('admin.harga-referensi.index'), Icon: TrendingUp, title: 'Harga Referensi',  desc: 'Atur acuan harga pasar KUD',            color: 'text-teal-600',    hoverBorder: 'hover:border-teal-300' },
+        { href: route('admin.panen.index'),           Icon: Scale,      title: 'Data Panen',       desc: 'Input timbangan & potong otomatis',    color: 'text-emerald-600', hoverBorder: 'hover:border-emerald-300' },
+        { href: route('admin.perawatan.index'),       Icon: CreditCard, title: 'Transaksi Produk', desc: 'Catat transaksi produk perawatan',      color: 'text-amber-600',   hoverBorder: 'hover:border-amber-300' },
+        { href: route('admin.harga-referensi.index'), Icon: TrendingUp, title: 'Data Produk Perawatan', desc: 'Atur acuan harga pasar KUD',       color: 'text-teal-600',    hoverBorder: 'hover:border-teal-300' },
     ];
 
     return (

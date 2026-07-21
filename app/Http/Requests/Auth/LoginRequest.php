@@ -42,7 +42,16 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // 'akun_aktif' => true ikut disertakan sebagai kondisi WHERE oleh Auth::attempt(),
+        // sehingga Petani Pasif (akun belum diaktifkan Admin KUD) tidak bisa login meski
+        // kebetulan tahu password default.
+        $credentials = [
+            'email' => $this->input('email'),
+            'password' => $this->input('password'),
+            'akun_aktif' => true,
+        ];
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

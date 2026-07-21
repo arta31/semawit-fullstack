@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
         'jenis' => 'pupuk',
         'harga_per_satuan' => 350000.00,
         'satuan' => 'Sak',
+        'stok' => 50,
         'deskripsi' => 'Rekomendasi terbaik untuk pertumbuhan pohon sawit usia 3-10 tahun.',
     ]);
 
@@ -38,6 +39,7 @@ class DatabaseSeeder extends Seeder
         'jenis' => 'pupuk',
         'harga_per_satuan' => 280000.00,
         'satuan' => 'Sak',
+        'stok' => 50,
         'deskripsi' => 'Membantu menyuburkan daun dan merangsang pembuahan lebat.',
     ]);
 
@@ -47,6 +49,7 @@ class DatabaseSeeder extends Seeder
         'jenis' => 'racun',
         'harga_per_satuan' => 850000.00,
         'satuan' => 'Liter',
+        'stok' => 30,
         'deskripsi' => 'Racun rumput kontak yang sangat cepat membasmi gulma kebun.',
     ]);
 
@@ -55,6 +58,7 @@ class DatabaseSeeder extends Seeder
         'jenis' => 'racun',
         'harga_per_satuan' => 120000.00,
         'satuan' => 'Liter',
+        'stok' => 30,
         'deskripsi' => 'Racun rumput sistemik membasmi alang-alang hingga ke akar.',
     ]);
 }

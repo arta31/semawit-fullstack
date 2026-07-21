@@ -22,7 +22,7 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <>
-            <Head title="Log in" />
+            <Head title="Masuk Akun - SEMAWIT" />
 
             <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900">Selamat Datang Kembali</h2>
@@ -101,11 +101,8 @@ export default function Login({ status, canResetPassword }) {
                 </div>
 
                 <div className="text-center mt-6">
-                    <p className="text-sm text-gray-600">
-                        Belum punya akun?{' '}
-                        <Link href={route('register')} className="text-emerald-600 font-bold hover:underline">
-                            Daftar di sini
-                        </Link>
+                    <p className="text-xs text-gray-500">
+                        Belum punya akun? Hubungi Admin KUD untuk didaftarkan sebagai anggota.
                     </p>
                 </div>
             </form>
