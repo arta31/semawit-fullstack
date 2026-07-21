@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\URL; // <-- Tambahan Baris 1 (Panggil URL)
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Tambahan Baris 2: Paksa pakai HTTPS kalau di server online (biar gak layar putih)
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
+
         // Aturan password default aplikasi: minimal 8 karakter, wajib ada huruf besar
         // (mixedCase mensyaratkan huruf besar & kecil), dan wajib ada karakter simbol.
         Password::defaults(function () {
