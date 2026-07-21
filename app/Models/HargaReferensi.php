@@ -16,6 +16,7 @@ class HargaReferensi extends Model
         'jenis',
         'harga_per_satuan',
         'satuan',
+        'stok',
         'gambar_produk_path',
         'deskripsi',
     ];

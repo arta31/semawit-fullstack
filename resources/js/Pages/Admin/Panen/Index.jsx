@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
-import { CheckCircle2, Scale, Package, FlaskConical } from 'lucide-react';
+import useDebouncedInertiaSearch from '@/Hooks/useDebouncedInertiaSearch';
+import { CheckCircle2, Scale, Package, FlaskConical, Download, Search } from 'lucide-react';
 
-export default function Index({ dataPanens, profilLahans, flash }) {
+export default function Index({ dataPanens, profilLahans, filters, flash }) {
 
     const [modalTerbuka, setModalTerbuka] = useState(false);
+
+    const [searchParams, setSearchParam] = useDebouncedInertiaSearch('admin.panen.index', {
+        search: filters?.search || '',
+        tanggal_dari: filters?.tanggal_dari || '',
+        tanggal_sampai: filters?.tanggal_sampai || '',
+    });
 
     const { data, setData, post, processing, errors, reset } = useForm({
         profil_lahan_id: '',
@@ -36,7 +43,7 @@ export default function Index({ dataPanens, profilLahans, flash }) {
 
     return (
         <>
-            <Head title="Pencatatan Panen - SEMAWIT" />
+            <Head title="Timbangan Panen - SEMAWIT" />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
@@ -64,10 +71,10 @@ export default function Index({ dataPanens, profilLahans, flash }) {
                     <div className="px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
                         <div>
                             <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                                <Scale size={16} className="text-slate-400" /> Riwayat Pencatatan Panen
+                                <Scale size={16} className="text-slate-400" /> Timbangan Panen
                             </h2>
                             <p className="text-sm text-slate-500 mt-0.5">
-                                Input hasil timbangan anggota dan lakukan pemotongan otomatis ke pos sinking fund.
+                                Catat hasil timbangan anggota dan lakukan pemotongan sinking fund otomatis.
                             </p>
                         </div>
                         <button
@@ -81,6 +88,35 @@ export default function Index({ dataPanens, profilLahans, flash }) {
                         </button>
                     </div>
 
+                    {/* ── Search & Filter ── */}
+                    <div className="px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 bg-slate-50/50">
+                        <div className="relative flex-1">
+                            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                type="text"
+                                defaultValue={searchParams.search}
+                                onChange={e => setSearchParam('search', e.target.value)}
+                                placeholder="Cari nama petani..."
+                                className="w-full pl-9 pr-4 py-2 rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm placeholder-slate-400"
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="date"
+                                value={searchParams.tanggal_dari}
+                                onChange={e => setSearchParam('tanggal_dari', e.target.value)}
+                                className="rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm"
+                            />
+                            <span className="text-slate-400 text-sm">s/d</span>
+                            <input
+                                type="date"
+                                value={searchParams.tanggal_sampai}
+                                onChange={e => setSearchParam('tanggal_sampai', e.target.value)}
+                                className="rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm"
+                            />
+                        </div>
+                    </div>
+
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
@@ -90,7 +126,7 @@ export default function Index({ dataPanens, profilLahans, flash }) {
                                     <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Bruto</th>
                                     <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Alokasi Simpanan</th>
                                     <th className="py-3 px-6 text-xs font-semibold text-amber-600 uppercase tracking-wider">Jatah Bersih</th>
-                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Aksi</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Laporan</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-sm">
@@ -133,12 +169,11 @@ export default function Index({ dataPanens, profilLahans, flash }) {
                                                 <a
                                                     href={route('admin.laporan.panen.pdf', panen.profil_lahan_id)}
                                                     target="_blank"
-                                                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-lg text-xs border border-slate-200/60 transition-colors"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg text-xs border border-emerald-200 transition-colors"
                                                 >
-                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                                    </svg>
-                                                    Cetak Struk
+                                                    <Download size={12} />
+                                                    Unduh Laporan
                                                 </a>
                                             </td>
                                         </tr>
@@ -165,7 +200,7 @@ export default function Index({ dataPanens, profilLahans, flash }) {
                         <div className="flex justify-between items-center p-5 border-b border-slate-200/80 bg-slate-50 shrink-0">
                             <div>
                                 <h3 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                                    <Scale size={16} className="text-slate-500" /> Catat Hasil Panen Baru
+                                    <Scale size={16} className="text-slate-500" /> Catat Hasil Panen
                                 </h3>
                                 <p className="text-xs text-slate-400 mt-0.5">Isi data timbangan untuk memproses pemotongan sinking fund otomatis.</p>
                             </div>
@@ -199,7 +234,7 @@ export default function Index({ dataPanens, profilLahans, flash }) {
                                         Data Timbangan
                                     </h4>
                                     <div>
-                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Tanggal Timbang / Panen</label>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Tanggal Panen</label>
                                         <input type="date" value={data.tanggal_panen} onChange={e => setData('tanggal_panen', e.target.value)} className="block w-full rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm" required />
                                         {errors.tanggal_panen && <p className="text-red-500 text-xs mt-1">{errors.tanggal_panen}</p>}
                                     </div>
@@ -210,7 +245,7 @@ export default function Index({ dataPanens, profilLahans, flash }) {
                                             {errors.berat_bersih_kg && <p className="text-red-500 text-xs mt-1">{errors.berat_bersih_kg}</p>}
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Harga / Kg (Rp)</label>
+                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Harga per Kg (Rp)</label>
                                             <input type="number" value={data.harga_per_kg} onChange={e => setData('harga_per_kg', e.target.value)} className="block w-full rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm font-semibold text-emerald-700 placeholder-slate-300" placeholder="Contoh: 2500" required />
                                             {errors.harga_per_kg && <p className="text-red-500 text-xs mt-1">{errors.harga_per_kg}</p>}
                                         </div>

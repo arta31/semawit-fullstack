@@ -13,10 +13,12 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'jenis_kelamin',
         'email',
         'phone_number',
         'password',
         'role',
+        'akun_aktif',
     ];
 
     protected $hidden = [
@@ -28,6 +30,7 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'akun_aktif' => 'boolean',
         ];
     }
 

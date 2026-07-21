@@ -1,206 +1,247 @@
-import React from 'react';
-import { Head, Link } from '@inertiajs/react';
-import { Package, FlaskConical, CheckCircle2, Clock, LogOut, Leaf, TrendingUp } from 'lucide-react';
+import React, { useState } from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import MainLayout from '@/Layouts/MainLayout'; // Menggunakan Layout Responsif Utama
 
-export default function Dashboard({ auth, profilLahans }) {
-    const lahan     = auth.user.profil_lahans?.[0] || profilLahans?.[0] || null;
-    const perawatan = lahan?.informasi_perawatan || null;
+export default function Dashboard({ petani, statistik, riwayat_panen, flash }) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const hitungPersen = (saatIni, target) => {
-        if (!target || target == 0) return 0;
-        return Math.min(Math.round((parseFloat(saatIni) / parseFloat(target)) * 100), 100);
+    // Form Inertia untuk Input Panen
+    const { data, setData, post, processing, reset, errors } = useForm({
+        tanggal_panen: new Date().toISOString().split('T')[0],
+        berat_bersih_kg: '',
+        harga_per_kg: '',
+    });
+
+    // --- TAMBAHKAN LOGIKA PERHITUNGAN DI SINI ---
+    const berat = parseFloat(data.berat_bersih_kg) || 0;
+    const harga = parseFloat(data.harga_per_kg) || 0;
+    const total = berat * harga;
+    const simPupuk = total * 0.15;
+    const simRacun = total * 0.10;
+    const simBersih = total * 0.75;
+    // --------------------------------------------
+
+    const formatRupiah = (angka) => {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
     };
 
-    const persenPupuk = perawatan ? hitungPersen(perawatan.saldo_pupuk_saat_ini, perawatan.target_tabungan_pupuk) : 0;
-    const persenRacun = perawatan ? hitungPersen(perawatan.saldo_racun_saat_ini, perawatan.target_tabungan_racun) : 0;
-    const formatRupiah = (angka) => 'Rp ' + parseInt(angka || 0).toLocaleString('id-ID');
+    const formatJuta = (angka) => {
+        if (angka >= 1000000) return '+Rp ' + (angka / 1000000).toFixed(1).replace('.0', '') + 'jt';
+        return '+Rp ' + (angka / 1000).toFixed(0) + 'rb';
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        post(route('petani.panen.store'), {
+            onSuccess: () => {
+                setIsModalOpen(false);
+                reset();
+            }
+        });
+    };
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-50 to-white">
-            <Head title="Tabunganku - SEMAWIT" />
+        <>
+            <Head title="Beranda Petani - SEMAWIT" />
 
-            {/* Header */}
-            <header className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-green-800 shadow-lg">
-                {/* Decorative top bar */}
-                <div className="h-1 bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400" />
-                <div className="max-w-xl mx-auto px-4 py-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-11 h-11 rounded-2xl bg-yellow-400 flex items-center justify-center shadow-lg shadow-yellow-400/30">
-                                <Leaf size={22} className="text-emerald-900" />
-                            </div>
-                            <div>
-                                <p className="text-xs font-semibold text-emerald-300 uppercase tracking-widest">Aplikasi SEMAWIT</p>
-                                <h1 className="text-xl font-bold text-white leading-tight mt-0.5">
-                                    Halo, {auth.user.name.split(' ')[0]}!
-                                </h1>
-                            </div>
-                        </div>
-                        <Link
-                            href="/logout-darurat"
-                            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-red-500/30 border border-white/15 hover:border-red-400/40 text-white text-sm font-semibold rounded-xl transition-all"
-                        >
-                            <LogOut size={15} />
-                            Keluar
-                        </Link>
-                    </div>
-                </div>
-                {/* Bottom wave */}
-                <svg viewBox="0 0 1440 32" className="w-full block" fill="white" preserveAspectRatio="none" style={{height: '24px'}}>
-                    <path d="M0,16 C480,32 960,0 1440,16 L1440,32 L0,32 Z" />
-                </svg>
-            </header>
-
-            {/* Content */}
-            <main className="flex-1 max-w-xl mx-auto w-full px-4 py-6 space-y-4">
-
-                {/* Kartu Lahan */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="bg-gradient-to-r from-emerald-50 to-green-50 px-5 py-3 border-b border-emerald-100 flex items-center gap-2">
-                        <TrendingUp size={14} className="text-emerald-600" />
-                        <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Informasi Lahan Anda</p>
-                    </div>
-                    <div className="px-5 py-5">
-                        <h2 className="text-2xl font-bold text-slate-800">{lahan ? lahan.nama_lahan : 'Lahan Utama'}</h2>
-                        <div className="flex items-center gap-6 mt-3">
-                            <div>
-                                <p className="text-xs text-slate-400 font-medium">Luas Lahan</p>
-                                <p className="text-xl font-bold text-slate-800 mt-0.5">
-                                    {lahan ? parseFloat(lahan.luas_lahan_hektar) : 0}
-                                    <span className="text-sm font-normal text-slate-400 ml-1">Hektar</span>
-                                </p>
-                            </div>
-                            <div className="w-px h-10 bg-slate-200" />
-                            <div>
-                                <p className="text-xs text-slate-400 font-medium">Jumlah Pohon</p>
-                                <p className="text-xl font-bold text-slate-800 mt-0.5">
-                                    {lahan ? lahan.jumlah_pohon : 0}
-                                    <span className="text-sm font-normal text-slate-400 ml-1">Batang</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Tabungan Pupuk */}
-                <TabunganCard
-                    judul="Tabungan Pupuk"
-                    Icon={Package}
-                    scheme="emerald"
-                    persen={persenPupuk}
-                    saldo={perawatan ? formatRupiah(perawatan.saldo_pupuk_saat_ini) : formatRupiah(0)}
-                    target={perawatan ? formatRupiah(perawatan.target_tabungan_pupuk) : formatRupiah(0)}
-                    pesanReady="Saldo cukup! Anda bisa mengambil Pupuk di KUD Semawit."
-                    pesanTunggu="Terus kumpulkan hasil panen untuk mencapai target pupuk Anda."
-                />
-
-                {/* Tabungan Racun */}
-                <TabunganCard
-                    judul="Tabungan Racun"
-                    Icon={FlaskConical}
-                    scheme="blue"
-                    persen={persenRacun}
-                    saldo={perawatan ? formatRupiah(perawatan.saldo_racun_saat_ini) : formatRupiah(0)}
-                    target={perawatan ? formatRupiah(perawatan.target_tabungan_racun) : formatRupiah(0)}
-                    pesanReady="Saldo cukup! Anda bisa mengambil Racun Rumput di KUD."
-                    pesanTunggu="Terus kumpulkan hasil panen untuk mencapai target racun Anda."
-                />
-
-            </main>
-
-            <footer className="border-t border-slate-100 bg-white py-4 text-center">
-                <p className="text-xs text-slate-400">&copy; {new Date().getFullYear()} SEMAWIT &mdash; KUD</p>
-            </footer>
-        </div>
-    );
-}
-
-const schemes = {
-    emerald: {
-        headerFrom: 'from-emerald-50', headerTo: 'to-green-50', headerBorder: 'border-emerald-100',
-        headerIcon: 'text-emerald-600', headerText: 'text-emerald-700',
-        border: 'border-emerald-200',
-        iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600',
-        pctColor: 'text-emerald-700',
-        progressFrom: 'from-emerald-500', progressTo: 'to-green-500',
-        okBg: 'bg-emerald-50', okBorder: 'border-emerald-200', okIcon: 'text-emerald-600', okText: 'text-emerald-800',
-        waitBg: 'bg-amber-50', waitBorder: 'border-amber-200', waitIcon: 'text-amber-600', waitText: 'text-amber-800',
-    },
-    blue: {
-        headerFrom: 'from-blue-50', headerTo: 'to-indigo-50', headerBorder: 'border-blue-100',
-        headerIcon: 'text-blue-600', headerText: 'text-blue-700',
-        border: 'border-blue-200',
-        iconBg: 'bg-blue-100', iconColor: 'text-blue-600',
-        pctColor: 'text-blue-700',
-        progressFrom: 'from-blue-500', progressTo: 'to-indigo-500',
-        okBg: 'bg-emerald-50', okBorder: 'border-emerald-200', okIcon: 'text-emerald-600', okText: 'text-emerald-800',
-        waitBg: 'bg-amber-50', waitBorder: 'border-amber-200', waitIcon: 'text-amber-600', waitText: 'text-amber-800',
-    },
-};
-
-function TabunganCard({ judul, Icon, scheme, persen, saldo, target, pesanReady, pesanTunggu }) {
-    const sudahCukup = persen >= 100;
-    const s = schemes[scheme];
-
-    return (
-        <div className={`bg-white rounded-2xl border ${s.border} shadow-sm overflow-hidden`}>
-            {/* Header strip */}
-            <div className={`bg-gradient-to-r ${s.headerFrom} ${s.headerTo} px-5 py-3 border-b ${s.headerBorder} flex items-center gap-2`}>
-                <Icon size={14} className={s.headerIcon} />
-                <p className={`text-xs font-semibold ${s.headerText} uppercase tracking-wider`}>{judul}</p>
-            </div>
-
-            <div className="px-5 py-5 space-y-5">
-                {/* Saldo + persen */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className={`${s.iconBg} rounded-2xl p-3`}>
-                            <Icon size={28} className={s.iconColor} />
-                        </div>
-                        <div>
-                            <p className="text-sm text-slate-500 font-medium">Terkumpul</p>
-                            <p className={`text-2xl font-black ${s.pctColor} mt-0.5`}>{saldo}</p>
-                        </div>
-                    </div>
-                    <div className="text-right">
-                        <span className={`text-5xl font-black ${s.pctColor} leading-none`}>{persen}</span>
-                        <span className={`text-xl font-bold ${s.pctColor}`}>%</span>
-                    </div>
-                </div>
-
-                {/* Progress bar */}
-                <div>
-                    <div className="h-10 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                        <div
-                            className={`h-full bg-gradient-to-r ${s.progressFrom} ${s.progressTo} rounded-full shadow-sm transition-all duration-700 flex items-center justify-end pr-3`}
-                            style={{ width: `${Math.max(persen > 0 ? 8 : 0, persen)}%` }}
-                        >
-                            {persen > 20 && (
-                                <span className="text-white text-sm font-bold">{persen}%</span>
-                            )}
-                        </div>
-                    </div>
-                    <div className="flex justify-between mt-2 text-xs font-medium text-slate-400">
-                        <span>Mulai menabung</span>
-                        <span>Target: {target}</span>
-                    </div>
-                </div>
-
-                {/* Status */}
-                {sudahCukup ? (
-                    <div className={`flex items-start gap-3 ${s.okBg} border ${s.okBorder} rounded-xl p-4`}>
-                        <CheckCircle2 size={22} className={`${s.okIcon} shrink-0 mt-0.5`} />
-                        <p className={`text-base font-semibold ${s.okText} leading-snug`}>{pesanReady}</p>
-                    </div>
-                ) : (
-                    <div className={`flex items-start gap-3 ${s.waitBg} border ${s.waitBorder} rounded-xl p-4`}>
-                        <Clock size={22} className={`${s.waitIcon} shrink-0 mt-0.5`} />
-                        <p className={`text-base font-semibold ${s.waitText} leading-snug`}>{pesanTunggu}</p>
+            <div className="w-full px-4 sm:px-6 lg:px-10 py-8 space-y-8 max-w-6xl mx-auto">
+                
+                {/* Flash Message Sukses */}
+                {flash?.success && (
+                    <div className="bg-emerald-100 border-l-4 border-emerald-600 text-emerald-800 p-4 rounded-r-xl text-sm font-bold flex items-center gap-2 shadow-sm">
+                        <span className="text-xl">✅</span> {flash.success}
                     </div>
                 )}
+
+                {/* GREETING & TOMBOL CATAT PANEN (Responsif Flexbox) */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div>
+                        <h2 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">
+                            {petani.ucapan}, {petani.sapaan ? `${petani.sapaan} ` : ''}{petani.name}! 🌾
+                        </h2>
+                        <p className="text-sm text-slate-500 font-medium mt-1 flex items-center gap-1.5">
+                            <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            Panen terakhir: <span className="font-bold text-slate-700">{statistik.tanggal_panen_terakhir}</span>
+                        </p>
+                    </div>
+                    
+                    {/* TOMBOL CATAT PANEN UTAMA */}
+                    <button 
+                        onClick={() => setIsModalOpen(true)}
+                        className="w-full md:w-auto bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl px-6 py-3.5 flex items-center justify-center gap-2 shadow-md transition-transform active:scale-95"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                        <span className="font-bold text-lg">Catat Hasil Panen</span>
+                    </button>
+                </div>
+
+                {/* KARTU STATISTIK (Grid Responsif) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    {/* Total Keseluruhan */}
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-center">
+                        <div className="flex justify-between items-center mb-2">
+                            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Pendapatan Panen</p>
+                            <span className="bg-emerald-50 text-emerald-700 text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-wider">Terbaru</span>
+                        </div>
+                        <h3 className="text-3xl lg:text-4xl font-black text-emerald-900">
+                            {formatRupiah(statistik.total_keseluruhan)}
+                        </h3>
+                    </div>
+
+                    {/* Jatah Aman */}
+                    <div className="bg-emerald-700 rounded-2xl p-6 shadow-md shadow-emerald-900/20 flex justify-between items-center text-white">
+                        <div>
+                            <p className="text-emerald-100 text-xs md:text-sm font-bold uppercase tracking-wider mb-1">Pendapatan Bersih</p>
+                            <p className="text-2xl lg:text-3xl font-black">{formatRupiah(statistik.pendapatan_bersih)}</p>
+                        </div>
+                        <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center text-2xl shadow-inner">💰</div>
+                    </div>
+
+                </div>
+
+                {/* PROGRESS TABUNGAN PUPUK & RACUN (UC08) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div className="flex justify-between items-center mb-3">
+                            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">🌱 Tabungan Pupuk</p>
+                            <span className="text-lg font-black text-emerald-700">{statistik.pupuk.persen}%</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden mb-2">
+                            <div className="h-3 rounded-full bg-emerald-500 transition-all duration-500" style={{ width: `${Math.min(100, statistik.pupuk.persen)}%` }}></div>
+                        </div>
+                        <p className="text-xs text-slate-500 font-medium">
+                            {formatRupiah(statistik.pupuk.saldo)} <span className="text-slate-400">dari target</span> {formatRupiah(statistik.pupuk.target)}
+                        </p>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div className="flex justify-between items-center mb-3">
+                            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">🧪 Tabungan Racun</p>
+                            <span className="text-lg font-black text-blue-700">{statistik.racun.persen}%</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden mb-2">
+                            <div className="h-3 rounded-full bg-blue-500 transition-all duration-500" style={{ width: `${Math.min(100, statistik.racun.persen)}%` }}></div>
+                        </div>
+                        <p className="text-xs text-slate-500 font-medium">
+                            {formatRupiah(statistik.racun.saldo)} <span className="text-slate-400">dari target</span> {formatRupiah(statistik.racun.target)}
+                        </p>
+                    </div>
+                </div>
+
+                {/* RIWAYAT PANEN LIST */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
+                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            🚜 Riwayat Panen Terakhir
+                        </h3>
+                        <Link href={route('petani.riwayat')} className="text-sm font-bold text-emerald-600 hover:text-emerald-800 transition-colors">
+                            Lihat Semua &rarr;
+                        </Link>
+                    </div>
+
+                    <div className="p-6 space-y-4">
+                        {riwayat_panen.length > 0 ? (
+                            riwayat_panen.map((panen) => (
+                                <div key={panen.id} className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-emerald-50/50 transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-emerald-700 shrink-0 shadow-sm">
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-800 text-base">Panen {panen.nama_lahan}</h4>
+                                            <p className="text-sm text-slate-500 font-medium mt-0.5">{panen.tanggal} • <span className="font-bold text-slate-700">{panen.berat_ton} Ton</span></p>
+                                        </div>
+                                    </div>
+                                    <div className="sm:text-right bg-white sm:bg-transparent p-3 sm:p-0 rounded-lg border sm:border-0 border-slate-200">
+                                        <p className="text-xs text-slate-400 font-bold uppercase mb-0.5">Diterima Bersih</p>
+                                        <span className="font-black text-emerald-600 text-lg">{formatJuta(panen.pendapatan_bersih)}</span>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-8">
+                                <p className="text-sm text-slate-400 font-medium">Belum ada catatan panen. Ayo mulai catat panen pertamamu untuk mulai menabung!</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
-        </div>
+
+            {/* MODAL INPUT PANEN (RESPONSIF) */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsModalOpen(false)}></div>
+
+                    <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all p-6 sm:p-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-2xl font-black text-slate-800">Catat Hasil Panen</h3>
+                            <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 bg-slate-100 hover:bg-red-50 p-2 rounded-full transition-colors">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tanggal Panen</label>
+                                <input type="date" value={data.tanggal_panen} onChange={e => setData('tanggal_panen', e.target.value)} className="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm" required />
+                                {errors.tanggal_panen && <p className="text-red-500 text-xs mt-1">{errors.tanggal_panen}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Berat Bersih (Kg)</label>
+                                <input type="number" value={data.berat_bersih_kg} onChange={e => setData('berat_bersih_kg', e.target.value)} className="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-lg font-bold shadow-sm" placeholder="Contoh: 1500" required />
+                                {errors.berat_bersih_kg && <p className="text-red-500 text-xs mt-1">{errors.berat_bersih_kg}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Harga per Kg (Rp)</label>
+                                <input type="number" value={data.harga_per_kg} onChange={e => setData('harga_per_kg', e.target.value)} className="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-lg font-bold shadow-sm" placeholder="Contoh: 2500" required />
+                                {errors.harga_per_kg && <p className="text-red-500 text-xs mt-1">{errors.harga_per_kg}</p>}
+                            </div>
+
+                            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 mt-2">
+                                <p className="text-xs text-emerald-800 font-medium italic text-center">
+                                    Sistem akan otomatis memotong uang untuk tabungan pupuk & racun Anda.
+                                </p>
+                            </div>
+
+                            {/* UI SIMULASI AUTO-SPLITTING */}
+                            {total > 0 && (
+                                <div className="space-y-4 pt-2">
+                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-1.5">
+                                        <span className="bg-emerald-50 text-emerald-600 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">✨</span>
+                                        Simulasi Auto-Splitting
+                                    </h4>
+                                    <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-100">
+                                        <p className="text-xs text-slate-500 mb-1">Pendapatan Kotor</p>
+                                        <p className="text-xl font-bold text-slate-900 mb-3">{formatRupiah(total)}</p>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
+                                                <p className="text-[10px] text-slate-400 font-semibold uppercase">Pupuk (15%)</p>
+                                                <p className="text-sm font-bold text-emerald-600 mt-0.5">{formatRupiah(simPupuk)}</p>
+                                            </div>
+                                            <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
+                                                <p className="text-[10px] text-slate-400 font-semibold uppercase">Racun (10%)</p>
+                                                <p className="text-sm font-bold text-blue-600 mt-0.5">{formatRupiah(simRacun)}</p>
+                                            </div>
+                                            <div className="bg-emerald-600 rounded-xl p-3 shadow-sm">
+                                                <p className="text-[10px] text-emerald-200 font-semibold uppercase">Sisa Bersih</p>
+                                                <p className="text-sm font-bold text-white mt-0.5">{formatRupiah(simBersih)}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <button type="submit" disabled={processing} className="w-full mt-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-lg py-4 rounded-xl shadow-md transition-transform active:scale-95 flex justify-center items-center gap-2">
+                                {processing ? 'Menyimpan...' : 'Simpan Panen & Potong Otomatis'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </>
     );
 }
 
-Dashboard.layout = (page) => page;
+// PERBAIKAN: Gunakan MainLayout yang di-import agar responsif
+Dashboard.layout = page => <MainLayout>{page}</MainLayout>;

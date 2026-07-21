@@ -1,19 +1,27 @@
 import React, { useState } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
-import { CheckCircle2, ClipboardList, Package, FlaskConical, RefreshCw, Plus } from 'lucide-react';
+import useDebouncedInertiaSearch from '@/Hooks/useDebouncedInertiaSearch';
+import { CheckCircle2, ClipboardList, Package, FlaskConical, RefreshCw, Plus, X, Search } from 'lucide-react';
 
-export default function Index({ hargaReferensis, flash }) {
+export default function Index({ hargaReferensis, filters, flash }) {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editMode, setEditMode]       = useState(false);
     const [editId, setEditId]           = useState(null);
+    const [previewFoto, setPreviewFoto] = useState(null); // { src, nama } - untuk lightbox foto produk
+
+    const [searchParams, setSearchParam] = useDebouncedInertiaSearch('admin.harga-referensi.index', {
+        search: filters?.search || '',
+        jenis: filters?.jenis || '',
+    });
 
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
         nama_produk      : '',
         jenis            : 'pupuk',
         harga_per_satuan : '',
         satuan           : 'Sak',
+        stok             : '',
         deskripsi        : '',
         gambar_produk    : null,
     });
@@ -34,6 +42,7 @@ export default function Index({ hargaReferensis, flash }) {
             jenis            : produk.jenis,
             harga_per_satuan : produk.harga_per_satuan,
             satuan           : produk.satuan,
+            stok             : produk.stok,
             deskripsi        : produk.deskripsi || '',
             gambar_produk    : null,
         });
@@ -62,7 +71,7 @@ export default function Index({ hargaReferensis, flash }) {
 
     return (
         <>
-            <Head title="Manajemen Harga Acuan - SEMAWIT" />
+            <Head title="Data Produk Perawatan - SEMAWIT" />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
@@ -94,10 +103,10 @@ export default function Index({ hargaReferensis, flash }) {
                     <div className="p-6 border-b border-slate-200/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
                         <div>
                             <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                                <ClipboardList size={16} className="text-slate-400" /> Daftar Acuan Harga KUD
+                                <ClipboardList size={16} className="text-slate-400" /> Data Produk Perawatan
                             </h2>
                             <p className="text-sm text-slate-500 mt-0.5">
-                                Kelola harga referensi pupuk dan racun untuk perhitungan target sinking fund otomatis.
+                                Kelola produk pupuk dan racun sebagai acuan harga sinking fund anggota KUD.
                             </p>
                         </div>
                         <button
@@ -111,14 +120,39 @@ export default function Index({ hargaReferensis, flash }) {
                         </button>
                     </div>
 
+                    {/* Search & Filter */}
+                    <div className="px-6 py-4 border-b border-slate-200/80 flex flex-col sm:flex-row gap-3 bg-slate-50/50">
+                        <div className="relative flex-1">
+                            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                type="text"
+                                defaultValue={searchParams.search}
+                                onChange={e => setSearchParam('search', e.target.value)}
+                                placeholder="Cari nama produk..."
+                                className="w-full pl-9 pr-4 py-2 rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm placeholder-slate-400"
+                            />
+                        </div>
+                        <select
+                            value={searchParams.jenis}
+                            onChange={e => setSearchParam('jenis', e.target.value)}
+                            className="rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm bg-white sm:w-48"
+                        >
+                            <option value="">Semua Jenis</option>
+                            <option value="pupuk">Pupuk</option>
+                            <option value="racun">Racun Rumput</option>
+                        </select>
+                    </div>
+
                     {/* Tabel */}
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50 border-b border-slate-200">
                                     <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Foto</th>
-                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nama Produk / Jenis</th>
-                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Harga Satuan</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nama Produk</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Jenis Produk</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Harga per Satuan</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Stok</th>
                                     <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Deskripsi</th>
                                     <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Aksi</th>
                                 </tr>
@@ -131,11 +165,18 @@ export default function Index({ hargaReferensis, flash }) {
                                             {/* Foto */}
                                             <td className="py-4 px-6">
                                                 {produk.gambar_produk_path ? (
-                                                    <img
-                                                        src={`/storage/${produk.gambar_produk_path}`}
-                                                        alt={produk.nama_produk}
-                                                        className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-sm"
-                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setPreviewFoto({ src: `/storage/${produk.gambar_produk_path}`, nama: produk.nama_produk })}
+                                                        className="block w-12 h-12 rounded-xl overflow-hidden border border-slate-200 shadow-sm hover:ring-2 hover:ring-emerald-400 hover:scale-105 transition-all cursor-zoom-in"
+                                                        title="Lihat foto produk"
+                                                    >
+                                                        <img
+                                                            src={`/storage/${produk.gambar_produk_path}`}
+                                                            alt={produk.nama_produk}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </button>
                                                 ) : (
                                                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm border ${
                                                         produk.jenis === 'pupuk'
@@ -147,22 +188,37 @@ export default function Index({ hargaReferensis, flash }) {
                                                 )}
                                             </td>
 
-                                            {/* Nama + badge jenis */}
+                                            {/* Nama Produk */}
                                             <td className="py-4 px-6 whitespace-nowrap">
                                                 <p className="font-semibold text-slate-900">{produk.nama_produk}</p>
-                                                <span className={`inline-flex items-center mt-1 px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-full tracking-wide ${
+                                            </td>
+
+                                            {/* Jenis Produk */}
+                                            <td className="py-4 px-6 whitespace-nowrap">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-full tracking-wide ${
                                                     produk.jenis === 'pupuk'
                                                         ? 'bg-emerald-50 text-emerald-800 border border-emerald-100'
                                                         : 'bg-amber-50 text-amber-800 border border-amber-100'
                                                 }`}>
-                                                    {produk.jenis === 'pupuk' ? 'Pupuk' : 'Racun'}
+                                                    {produk.jenis === 'pupuk' ? 'Pupuk' : 'Racun Rumput'}
                                                 </span>
                                             </td>
 
-                                            {/* Harga */}
+                                            {/* Harga per Satuan */}
                                             <td className="py-4 px-6 whitespace-nowrap">
                                                 <p className="font-bold text-emerald-700">{formatRupiah(produk.harga_per_satuan)}</p>
                                                 <p className="text-xs text-slate-400 mt-0.5">per {produk.satuan}</p>
+                                            </td>
+
+                                            {/* Stok */}
+                                            <td className="py-4 px-6 whitespace-nowrap">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 text-xs font-bold rounded-full ${
+                                                    produk.stok > 0
+                                                        ? 'bg-slate-100 text-slate-700'
+                                                        : 'bg-red-50 text-red-600 border border-red-100'
+                                                }`}>
+                                                    {produk.stok} {produk.satuan}
+                                                </span>
                                             </td>
 
                                             {/* Deskripsi */}
@@ -191,7 +247,7 @@ export default function Index({ hargaReferensis, flash }) {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="5" className="py-16 text-center">
+                                        <td colSpan="6" className="py-16 text-center">
                                             <div className="flex flex-col items-center gap-3 text-slate-400">
                                                 <svg className="w-12 h-12 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
@@ -223,12 +279,12 @@ export default function Index({ hargaReferensis, flash }) {
                             <div>
                                 <h3 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
                                     {editMode ? <RefreshCw size={16} className="text-amber-500" /> : <Plus size={16} className="text-emerald-500" />}
-                                    {editMode ? 'Edit Produk Referensi' : 'Tambah Produk Referensi'}
+                                    {editMode ? 'Edit Produk Perawatan' : 'Tambah Produk Perawatan'}
                                 </h3>
                                 <p className="text-xs text-slate-400 mt-0.5">
                                     {editMode
-                                        ? 'Perbarui data produk referensi harga KUD.'
-                                        : 'Tambahkan produk baru sebagai acuan harga sinking fund.'}
+                                        ? 'Perbarui data produk perawatan yang sudah ada.'
+                                        : 'Tambahkan produk pupuk atau racun baru sebagai acuan harga.'}
                                 </p>
                             </div>
                             <button
@@ -264,27 +320,35 @@ export default function Index({ hargaReferensis, flash }) {
                                         {errors.nama_produk && <p className="text-red-500 text-xs mt-1">{errors.nama_produk}</p>}
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Jenis Komoditas</label>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Jenis Produk</label>
                                         <select
                                             value={data.jenis}
-                                            onChange={e => setData('jenis', e.target.value)}
+                                            onChange={e => {
+                                                const jenisBaru = e.target.value;
+                                                // UC04 S.1/S.2: satuan otomatis mengikuti jenis komoditas (Pupuk -> Sak, Racun -> Liter)
+                                                setData(prev => ({
+                                                    ...prev,
+                                                    jenis: jenisBaru,
+                                                    satuan: jenisBaru === 'pupuk' ? 'Sak' : 'Liter',
+                                                }));
+                                            }}
                                             className="block w-full rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm bg-white"
                                         >
-                                            <option value="pupuk">Pupuk (Penyubur)</option>
-                                            <option value="racun">Racun (Pestisida / Herbisida)</option>
+                                            <option value="pupuk">Pupuk</option>
+                                            <option value="racun">Racun Rumput</option>
                                         </select>
                                     </div>
                                 </div>
 
-                                {/* SECTION 2 — Harga & Satuan */}
+                                {/* SECTION 2 — Harga, Satuan & Stok */}
                                 <div className="space-y-4">
                                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-1.5">
                                         <span className="bg-emerald-50 text-emerald-600 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">2</span>
-                                        Harga &amp; Satuan
+                                        Harga, Satuan &amp; Stok
                                     </h4>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Harga Satuan (Rp)</label>
+                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Harga per Satuan (Rp)</label>
                                             <input
                                                 type="number"
                                                 value={data.harga_per_satuan}
@@ -296,17 +360,29 @@ export default function Index({ hargaReferensis, flash }) {
                                             {errors.harga_per_satuan && <p className="text-red-500 text-xs mt-1">{errors.harga_per_satuan}</p>}
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Satuan Ukuran</label>
+                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Satuan</label>
                                             <input
                                                 type="text"
                                                 value={data.satuan}
-                                                onChange={e => setData('satuan', e.target.value)}
-                                                className="block w-full rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm placeholder-slate-300"
-                                                placeholder="Contoh: Sak / Liter"
-                                                required
+                                                readOnly
+                                                className="block w-full rounded-xl border-slate-200 bg-slate-100 text-slate-600 text-sm shadow-sm cursor-not-allowed"
                                             />
+                                            <p className="text-[10px] text-slate-400 mt-1">Otomatis mengikuti Jenis Produk (Pupuk → Sak, Racun → Liter).</p>
                                             {errors.satuan && <p className="text-red-500 text-xs mt-1">{errors.satuan}</p>}
                                         </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Stok Gudang KUD</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={data.stok}
+                                            onChange={e => setData('stok', e.target.value)}
+                                            className="block w-full rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm font-semibold text-slate-700 placeholder-slate-300"
+                                            placeholder="Contoh: 20"
+                                            required
+                                        />
+                                        {errors.stok && <p className="text-red-500 text-xs mt-1">{errors.stok}</p>}
                                     </div>
                                 </div>
 
@@ -364,10 +440,36 @@ export default function Index({ hargaReferensis, flash }) {
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
                                 )}
-                                {processing ? 'Menyimpan...' : editMode ? 'Simpan Perubahan' : 'Simpan Produk'}
+                                {processing ? 'Menyimpan...' : 'Simpan Produk'}
                             </button>
                         </div>
 
+                    </div>
+                </div>
+            )}
+
+            {/* ── LIGHTBOX FOTO PRODUK ── */}
+            {previewFoto && (
+                <div
+                    className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+                    onClick={() => setPreviewFoto(null)}
+                >
+                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm" />
+                    <div className="relative max-w-lg w-full">
+                        <button
+                            type="button"
+                            onClick={() => setPreviewFoto(null)}
+                            className="absolute -top-11 right-0 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+                        <img
+                            src={previewFoto.src}
+                            alt={previewFoto.nama}
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl bg-white"
+                        />
+                        <p className="text-center text-white/90 text-sm font-semibold mt-3">{previewFoto.nama}</p>
                     </div>
                 </div>
             )}

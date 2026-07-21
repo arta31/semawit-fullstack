@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Laporan Hasil Panen - {{ $lahan->nama_lahan }}</title>
+    <title>Laporan Transaksi Perawatan - {{ $lahan->nama_lahan }}</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -84,6 +84,14 @@
         .text-right {
             text-align: right;
         }
+        .badge-pupuk {
+            color: #065f46;
+            font-weight: bold;
+        }
+        .badge-racun {
+            color: #1d4ed8;
+            font-weight: bold;
+        }
         .row-total {
             background-color: #f3f4f6;
             font-weight: bold;
@@ -116,7 +124,7 @@
     </div>
 
     <!-- JUDUL DOKUMEN -->
-    <div class="title-doc">Laporan Ringkasan Hasil Panen & Sinking Fund</div>
+    <div class="title-doc">Laporan Riwayat Transaksi Perawatan Lahan</div>
 
     <!-- DETAIL INFORMASI PETANI & LAHAN -->
     <table class="meta-table">
@@ -132,77 +140,52 @@
             <td class="meta-label">Nomor WhatsApp</td>
             <td>:</td>
             <td class="meta-value">{{ $lahan->user->phone_number }}</td>
-            <td class="meta-label">Luas Lahan / Estimasi Pohon</td>
-            <td>:</td>
-            <td class="meta-value">{{ number_format($lahan->luas_lahan_hektar, 2, ',', '.') }} Ha / {{ $lahan->jumlah_pohon }} Pohon</td>
-        </tr>
-        <tr>
             <td class="meta-label">Tanggal Cetak</td>
             <td>:</td>
             <td class="meta-value">{{ $tanggalCetak }}</td>
-            <td class="meta-label">Alokasi Simpanan Pupuk / Racun</td>
-            <td>:</td>
-            <td class="meta-value">{{ number_format($lahan->informasiPerawatan->persen_pupuk, 1) }}% / {{ number_format($lahan->informasiPerawatan->persen_racun, 1) }}%</td>
         </tr>
     </table>
 
-    <!-- TABEL UTAMA REKAPITULASI PANEN -->
+    <!-- TABEL RIWAYAT TRANSAKSI PERAWATAN -->
     <table class="data-table">
         <thead>
             <tr>
-                <th width="5%">No</th>
-                <th width="12%">Tanggal Panen</th>
-                <th width="12%">Berat TBS (Kg)</th>
-                <th width="13%">Harga Jual (Rp)</th>
-                <th width="15%">Total Pendapatan (Rp)</th>
-                <th width="14%">Tabungan Pupuk (Rp)</th>
-                <th width="14%">Tabungan Racun (Rp)</th>
-                <th width="15%">Pendapatan Bersih (Rp)</th>
+                <th width="6%">No</th>
+                <th width="15%">Tanggal Transaksi</th>
+                <th width="15%">Jenis Tabungan</th>
+                <th width="20%">Nominal Dipotong (Rp)</th>
+                <th width="44%">Keterangan</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($riwayatPanen as $index => $panen)
+            @forelse($riwayatPerawatan as $index => $log)
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
-                    <td class="text-center">{{ $panen->tanggal_panen->format('d-m-Y') }}</td>
-                    <td class="text-center">{{ number_format($panen->berat_bersih_kg, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($panen->harga_per_kg, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($panen->total_pendapatan, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($panen->nominal_pupuk, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($panen->nominal_racun, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($panen->nominal_rumah_tangga, 0, ',', '.') }}</td>
+                    <td class="text-center">{{ \Carbon\Carbon::parse($log->tanggal_transaksi)->format('d-m-Y') }}</td>
+                    <td class="text-center {{ $log->jenis_perawatan === 'pupuk' ? 'badge-pupuk' : 'badge-racun' }}">
+                        {{ ucfirst($log->jenis_perawatan) }}
+                    </td>
+                    <td class="text-right">{{ number_format($log->jumlah_pengeluaran, 0, ',', '.') }}</td>
+                    <td>{{ $log->deskripsi }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="text-center" style="padding: 15px; color: #6b7280;">Belum ada catatan transaksi panen pada lahan ini.</td>
+                    <td colspan="5" class="text-center" style="padding: 15px; color: #6b7280;">Belum ada catatan transaksi perawatan pada lahan ini.</td>
                 </tr>
             @endforelse
 
             <!-- BARIS TOTAL AKUMULASI -->
-            @if($riwayatPanen->isNotEmpty())
+            @if($riwayatPerawatan->isNotEmpty())
                 <tr class="row-total">
-                    <td colspan="2" class="text-center">TOTAL AKUMULASI</td>
-                    <td class="text-center">{{ number_format($ringkasan['total_berat'], 0, ',', '.') }}</td>
-                    <td class="text-right">-</td>
-                    <td class="text-right">{{ number_format($ringkasan['total_pendapatan'], 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($ringkasan['total_tabungan_pupuk'], 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($ringkasan['total_tabungan_racun'], 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($ringkasan['total_rumah_tangga'], 0, ',', '.') }}</td>
+                    <td colspan="3" class="text-center">TOTAL PENCAIRAN PUPUK / RACUN</td>
+                    <td class="text-right">
+                        {{ number_format($ringkasan['total_pupuk'], 0, ',', '.') }} / {{ number_format($ringkasan['total_racun'], 0, ',', '.') }}
+                    </td>
+                    <td class="text-right">Total: Rp {{ number_format($ringkasan['total_keseluruhan'], 0, ',', '.') }}</td>
                 </tr>
             @endif
         </tbody>
     </table>
-
-    <!-- KETERANGAN SALDO BERJALAN SAAT INI -->
-    @if($riwayatPanen->isNotEmpty())
-        <div style="margin-top: 15px; background-color: #f9fafb; padding: 10px; border: 1px solid #e5e7eb; border-radius: 4px;">
-            <strong>Catatan Saldo Tabungan Berjalan (Sinking Fund):</strong>
-            <ul style="margin: 5px 0 0 15px; padding: 0;">
-                <li>Saldo Akumulasi Tabungan Pupuk : <strong>Rp {{ number_format($lahan->informasiPerawatan->saldo_pupuk_saat_ini, 0, ',', '.') }}</strong> dari target Rp {{ number_format($lahan->informasiPerawatan->target_tabungan_pupuk, 0, ',', '.') }}</li>
-                <li>Saldo Akumulasi Tabungan Racun : <strong>Rp {{ number_format($lahan->informasiPerawatan->saldo_racun_saat_ini, 0, ',', '.') }}</strong> dari target Rp {{ number_format($lahan->informasiPerawatan->target_tabungan_racun, 0, ',', '.') }}</li>
-            </ul>
-        </div>
-    @endif
 
     <!-- TANDA TANGAN -->
     <table class="footer-sign">

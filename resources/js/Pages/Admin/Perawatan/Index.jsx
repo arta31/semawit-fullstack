@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
-import { CheckCircle2, CreditCard, Package, FlaskConical, XCircle } from 'lucide-react';
+import useDebouncedInertiaSearch from '@/Hooks/useDebouncedInertiaSearch';
+import { CheckCircle2, CreditCard, Package, FlaskConical, XCircle, Search } from 'lucide-react';
 
-export default function Index({ logs, lahans, produks, flash }) {
+export default function Index({ logs, lahans, produks, filters, flash }) {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const [searchParams, setSearchParam] = useDebouncedInertiaSearch('admin.perawatan.index', {
+        search: filters?.search || '',
+        jenis: filters?.jenis || '',
+    });
 
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
         profil_lahan_id: '',
@@ -28,9 +34,11 @@ export default function Index({ logs, lahans, produks, flash }) {
     const saldoAktif     = data.jenis_perawatan === 'pupuk' ? saldoPupuk : saldoRacun;
     const produkTerpilih = produks.find(p => p.id == data.harga_referensi_id) || null;
     const hargaSatuan    = produkTerpilih ? parseFloat(produkTerpilih.harga_per_satuan) : 0;
+    const stokTersedia   = produkTerpilih ? parseInt(produkTerpilih.stok) : 0;
     const qtyInput       = parseInt(data.jumlah_barang) || 0;
     const totalEstimasi  = qtyInput * hargaSatuan;
     const isSaldoKurang  = totalEstimasi > saldoAktif;
+    const isStokKurang   = produkTerpilih && qtyInput > stokTersedia;
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -39,7 +47,7 @@ export default function Index({ logs, lahans, produks, flash }) {
 
     return (
         <>
-            <Head title="Pencairan Perawatan - SEMAWIT" />
+            <Head title="Transaksi Produk - SEMAWIT" />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
@@ -69,16 +77,39 @@ export default function Index({ logs, lahans, produks, flash }) {
                     <div className="p-6 border-b border-slate-200/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
                         <div>
                             <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                                <CreditCard size={16} className="text-slate-400" /> Riwayat Pengambilan Barang Anggota
+                                <CreditCard size={16} className="text-slate-400" /> Riwayat Transaksi Produk Perawatan
                             </h2>
-                            <p className="text-sm text-slate-500 mt-0.5">Catatan pencairan Sinking Fund untuk pupuk dan racun.</p>
+                            <p className="text-sm text-slate-500 mt-0.5">Catat transaksi produk perawatan dan potong saldo sinking fund petani.</p>
                         </div>
                         <button onClick={handleOpenModal} className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all active:scale-95 shrink-0">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                             </svg>
-                            Catat Pengambilan
+                            Catat Transaksi Produk
                         </button>
+                    </div>
+
+                    {/* Search & Filter */}
+                    <div className="px-6 py-4 border-b border-slate-200/80 flex flex-col sm:flex-row gap-3 bg-slate-50/50">
+                        <div className="relative flex-1">
+                            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                type="text"
+                                defaultValue={searchParams.search}
+                                onChange={e => setSearchParam('search', e.target.value)}
+                                placeholder="Cari nama petani..."
+                                className="w-full pl-9 pr-4 py-2 rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm placeholder-slate-400"
+                            />
+                        </div>
+                        <select
+                            value={searchParams.jenis}
+                            onChange={e => setSearchParam('jenis', e.target.value)}
+                            className="rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm bg-white sm:w-48"
+                        >
+                            <option value="">Semua Jenis</option>
+                            <option value="pupuk">Pupuk</option>
+                            <option value="racun">Racun</option>
+                        </select>
                     </div>
 
                     <div className="overflow-x-auto">
@@ -87,8 +118,8 @@ export default function Index({ logs, lahans, produks, flash }) {
                                 <tr className="bg-slate-50 border-b border-slate-200">
                                     <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tanggal Transaksi</th>
                                     <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Petani / Lahan</th>
-                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Jenis Tabungan</th>
-                                    <th className="py-3 px-6 text-xs font-semibold text-red-500 uppercase tracking-wider">Jumlah Potong Saldo</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Jenis Produk</th>
+                                    <th className="py-3 px-6 text-xs font-semibold text-red-500 uppercase tracking-wider">Jumlah Transaksi</th>
                                     <th className="py-3 px-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Keterangan</th>
                                 </tr>
                             </thead>
@@ -139,8 +170,8 @@ export default function Index({ logs, lahans, produks, flash }) {
                                                 <svg className="w-12 h-12 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                                 </svg>
-                                                <p className="font-medium text-slate-500 text-sm">Belum ada riwayat pencairan sinking fund.</p>
-                                                <p className="text-xs text-slate-400">Klik tombol "Catat Pengambilan" untuk memulai.</p>
+                                                <p className="font-medium text-slate-500 text-sm">Belum ada riwayat transaksi produk perawatan.</p>
+                                                <p className="text-xs text-slate-400">Klik tombol "Catat Transaksi Produk" untuk memulai.</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -160,9 +191,9 @@ export default function Index({ logs, lahans, produks, flash }) {
                         <div className="flex justify-between items-center p-5 border-b border-slate-200/80 bg-slate-50 shrink-0">
                             <div>
                                 <h3 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                                    <CreditCard size={16} className="text-slate-500" /> Pencatatan Pengambilan Stok
+                                    <CreditCard size={16} className="text-slate-500" /> Catat Transaksi Produk
                                 </h3>
-                                <p className="text-xs text-slate-400 mt-0.5">Cairkan saldo sinking fund petani untuk pengambilan pupuk atau racun.</p>
+                                <p className="text-xs text-slate-400 mt-0.5">Catat transaksi produk perawatan dan potong saldo sinking fund petani.</p>
                             </div>
                             <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg transition-colors">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -192,7 +223,7 @@ export default function Index({ logs, lahans, produks, flash }) {
                                 <div className="space-y-4">
                                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-1.5">
                                         <span className="bg-emerald-50 text-emerald-600 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">2</span>
-                                        Jenis Tabungan yang Dicairkan
+                                        Jenis Produk Perawatan
                                     </h4>
                                     <div className="flex gap-3">
                                         <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all duration-150 ${data.jenis_perawatan === 'pupuk' ? 'border-emerald-500 bg-emerald-50/50 shadow-sm' : 'border-slate-100 hover:border-slate-200 bg-white'}`}>
@@ -211,33 +242,41 @@ export default function Index({ logs, lahans, produks, flash }) {
                                 <div className="space-y-4">
                                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-1.5">
                                         <span className="bg-emerald-50 text-emerald-600 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">3</span>
-                                        Produk &amp; Jumlah Pengambilan
+                                        Detail Transaksi Produk
                                     </h4>
                                     <div>
                                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Pilih Produk</label>
                                         <select value={data.harga_referensi_id} onChange={e => setData('harga_referensi_id', e.target.value)} className="block w-full rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm bg-white" required>
                                             <option value="">— Pilih Produk Inventaris KUD —</option>
                                             {produks.filter(p => p.jenis === data.jenis_perawatan).map(produk => (
-                                                <option key={produk.id} value={produk.id}>{produk.nama_produk} ({formatRupiah(produk.harga_per_satuan)} / {produk.satuan})</option>
+                                                <option key={produk.id} value={produk.id} disabled={produk.stok <= 0}>
+                                                    {produk.nama_produk} ({formatRupiah(produk.harga_per_satuan)} / {produk.satuan}) — Stok: {produk.stok}{produk.stok <= 0 ? ' (Habis)' : ''}
+                                                </option>
                                             ))}
                                         </select>
                                         {errors.harga_referensi_id && <p className="text-red-500 text-xs mt-1">{errors.harga_referensi_id}</p>}
+                                        {produkTerpilih && (
+                                            <p className={`text-[11px] mt-1 font-semibold ${isStokKurang ? 'text-red-500' : 'text-slate-400'}`}>
+                                                Stok tersedia di gudang KUD: {stokTersedia} {produkTerpilih.satuan}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Jumlah Barang</label>
                                             <input type="number" min="1" value={data.jumlah_barang} onChange={e => setData('jumlah_barang', e.target.value)} className="block w-full rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm font-semibold text-emerald-700 placeholder-slate-300" placeholder="Contoh: 5" required />
                                             {errors.jumlah_barang && <p className="text-red-500 text-xs mt-1">{errors.jumlah_barang}</p>}
+                                            {isStokKurang && <p className="text-red-500 text-xs mt-1 font-bold">Melebihi stok tersedia!</p>}
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Tanggal Ambil</label>
+                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Tanggal Transaksi</label>
                                             <input type="date" value={data.tanggal_transaksi} onChange={e => setData('tanggal_transaksi', e.target.value)} className="block w-full rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm" required />
                                             {errors.tanggal_transaksi && <p className="text-red-500 text-xs mt-1">{errors.tanggal_transaksi}</p>}
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Catatan (Opsional)</label>
-                                        <input type="text" value={data.deskripsi} onChange={e => setData('deskripsi', e.target.value)} className="block w-full rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm placeholder-slate-300" placeholder="Contoh: Pengambilan kebun bukit indah" />
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Keterangan (Opsional)</label>
+                                        <input type="text" value={data.deskripsi} onChange={e => setData('deskripsi', e.target.value)} className="block w-full rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500 text-sm shadow-sm placeholder-slate-300" placeholder="Contoh: Pengambilan produk untuk kebun bukit indah" />
                                     </div>
                                 </div>
 
@@ -274,7 +313,7 @@ export default function Index({ logs, lahans, produks, flash }) {
 
                         <div className="p-5 border-t border-slate-200/80 bg-slate-50 shrink-0 flex gap-3">
                             <button type="button" onClick={handleCloseModal} className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs border border-slate-200 transition-colors">Batal</button>
-                            <button type="submit" form="perawatanForm" disabled={processing || isSaldoKurang} className={`flex-1 py-2 font-bold text-xs rounded-xl shadow-sm transition-all flex justify-center items-center gap-2 ${isSaldoKurang ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-70'}`}>
+                            <button type="submit" form="perawatanForm" disabled={processing || isSaldoKurang || isStokKurang} className={`flex-1 py-2 font-bold text-xs rounded-xl shadow-sm transition-all flex justify-center items-center gap-2 ${(isSaldoKurang || isStokKurang) ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-70'}`}>
                                 {processing && (
                                     <svg className="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
