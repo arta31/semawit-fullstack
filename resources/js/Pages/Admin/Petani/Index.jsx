@@ -211,7 +211,7 @@ export default function Index({ petanis, pupukPilihan, racunPilihan, flash }) {
                             </form>
                         </div>
                         <div className="p-4 border-t border-slate-100 bg-slate-50 flex gap-3">
-                            <button type="button" onClick={handleCloseAkunModal} className="px-4 py-2 bg-white text-slate-700 font-bold rounded-xl text-sm border border-slate-200">Batal</button>
+                            {/* <button type="button" onClick={handleCloseAkunModal} className="px-4 py-2 bg-white text-slate-700 font-bold rounded-xl text-sm border border-slate-200">Batal</button> */}
                             <button type="submit" form="akunForm" disabled={formAkun.processing} className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-sm">
                                 {formAkun.processing ? 'Menyimpan...' : 'Aktifkan Akun'}
                             </button>

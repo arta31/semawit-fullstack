@@ -112,7 +112,7 @@ class AdminPetaniController extends Controller
         }
     }
 
-    // BARU: Fungsi untuk mengaktifkan akun login petani
+    //Fungsi untuk mengaktifkan akun login petani
     public function aktifkanAkun(Request $request, $id)
     {
         $validated = $request->validate([

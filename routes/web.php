@@ -10,6 +10,7 @@ use App\Http\Controllers\HargaReferensiController;
 use App\Http\Controllers\AdminPetaniController;
 use App\Http\Controllers\LahanPerawatanController;
 use App\Http\Controllers\PetaniDashboardController;
+use App\Http\Controllers\AdminDashboardController;
 
 // Halaman Awal
 Route::get('/', function () {
@@ -38,29 +39,32 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:admin_kud'])->prefix('admin')->name('admin.')->group(function () {
 
         // JALUR YANG DI-UPGRADE (Mengirim metrik agregasi database riil ke React)
-        Route::get('/dashboard', function () {
-            $totalPetani = \App\Models\User::where('role', 'petani_lansia')->count();
-            $totalBerat = \App\Models\DataPanen::sum('berat_bersih_kg') ?: 0;
-            $totalPupuk = \App\Models\InformasiPerawatan::sum('saldo_pupuk_saat_ini') ?: 0;
-            $totalRacun = \App\Models\InformasiPerawatan::sum('saldo_racun_saat_ini') ?: 0;
-            $totalPengeluaran = \App\Models\LogPerawatan::sum('jumlah_pengeluaran') ?: 0;
+        // Route::get('/dashboard', function () {
+        //     $totalPetani = \App\Models\User::where('role', 'petani_lansia')->count();
+        //     $totalBerat = \App\Models\DataPanen::sum('berat_bersih_kg') ?: 0;
+        //     $totalPupuk = \App\Models\InformasiPerawatan::sum('saldo_pupuk_saat_ini') ?: 0;
+        //     $totalRacun = \App\Models\InformasiPerawatan::sum('saldo_racun_saat_ini') ?: 0;
+        //     $totalPengeluaran = \App\Models\LogPerawatan::sum('jumlah_pengeluaran') ?: 0;
 
-            $recentPanens = \App\Models\DataPanen::with('profilLahan.user')
-                ->latest()
-                ->take(5)
-                ->get();
+        //     $recentPanens = \App\Models\DataPanen::with('profilLahan.user')
+        //         ->latest()
+        //         ->take(5)
+        //         ->get();
 
-            return Inertia::render('Admin/Dashboard', [
-                'metrics' => [
-                    'total_petani' => $totalPetani,
-                    'total_berat_kg' => (float)$totalBerat,
-                    'total_tabungan_rp' => (float)($totalPupuk + $totalRacun),
-                    'total_pengeluaran_rp' => (float)$totalPengeluaran,
-                ],
-                'recentPanens' => $recentPanens
-            ]);
-        })->name('dashboard');
+        //     return Inertia::render('Admin/Dashboard', [
+        //         'metrics' => [
+        //             'total_petani' => $totalPetani,
+        //             'total_berat_kg' => (float)$totalBerat,
+        //             'total_tabungan_rp' => (float)($totalPupuk + $totalRacun),
+        //             'total_pengeluaran_rp' => (float)$totalPengeluaran,
+        //         ],
+        //         'recentPanens' => $recentPanens
+        //     ]);
+        // })->name('dashboard');
 
+
+        // RUTE
+         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         // Pengelolaan Panen
         Route::get('/panen', [PanenController::class, 'index'])->name('panen.index');
         Route::post('/panen', [PanenController::class, 'store'])->name('panen.store');
