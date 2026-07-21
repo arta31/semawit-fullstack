@@ -6,8 +6,7 @@ RUN apt-get update && apt-get install -y \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs
 
-# Atur modul MPM Apache agar tidak konflik, lalu aktifkan rewrite
-RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork
+# Aktifkan rewrite (Baris MPM dihapus karena image bawaan sudah memakai prefork)
 RUN a2enmod rewrite
 
 # Install ekstensi database (MySQL wajib untuk TiDB)
