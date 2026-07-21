@@ -6,8 +6,8 @@ import { Scale, Wallet, TrendingUp, ClipboardList, ChevronRight, ChevronDown, Ch
 // Kontak resmi KUD untuk pendaftaran anggota baru (UC01: hanya Admin KUD yang boleh buat akun,
 // jadi pendaftaran publik diarahkan untuk menghubungi KUD, bukan formulir mandiri).
 const KONTAK_KUD = {
-    nomorTampil: '0823-3923-8055',
-    nomorWa: '6282339238055', // format internasional tanpa tanda + untuk wa.me
+    nomorTampil: '0821-7268-9999',
+    nomorWa: '6282172689999', // format internasional tanpa tanda + untuk wa.me
     pesanTemplate: 'Halo, saya ingin mendaftar sebagai anggota KUD SEMAWIT.',
 };
 const waLink = `https://wa.me/${KONTAK_KUD.nomorWa}?text=${encodeURIComponent(KONTAK_KUD.pesanTemplate)}`;
